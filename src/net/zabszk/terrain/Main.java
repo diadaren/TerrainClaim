@@ -44,6 +44,9 @@ public class Main extends JavaPlugin
 	private static File configfile;
 	protected static FileConfiguration config;
 	
+	private static File efile;
+	protected static FileConfiguration econf;
+	
 	public static final int LangVersion = 1;
 	
 	@Override
@@ -636,11 +639,16 @@ public class Main extends JavaPlugin
 		Functions.GenerateLang("pl");
 		Functions.GenerateLang("fr"); //Translation made by: Alphayt (https://dev.bukkit.org/members/Alphayt)
 		
+		Functions.GenerateConfig("experimental");
+		
 		configfile = new File("plugins/TerrainClaim/terrains.yml");
 		config = YamlConfiguration.loadConfiguration(configfile);
 		
 		wfile = new File("plugins/TerrainClaim/worlds.yml");
 		wconf = YamlConfiguration.loadConfiguration(wfile);
+		
+		efile = new File("plugins/TerrainClaim/experimental.yml");
+		econf = YamlConfiguration.loadConfiguration(efile);
 		
 		langfile = new File("plugins/TerrainClaim/lang/" + config.getString("Lang") + ".yml");
 		langconf = YamlConfiguration.loadConfiguration(langfile);

@@ -14,6 +14,7 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 //import org.bukkit.Sound;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
@@ -268,12 +269,35 @@ public class Event  implements Listener
 										
 										e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation().add(0, 1, 0)).setType(Material.BEDROCK);
 										
-										//e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.WITHER_IDLE, 1, 0);
-										
-										for (int a = 0; a < 500; a++)
+										try
 										{
-											e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.CLOUD, 5);
+											if (Main.econf.getBoolean("PlaySound"))
+											{
+												e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
+											}
 										}
+										catch (Exception ex)
+										{
+											ex.printStackTrace();
+											System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
+										}
+										
+										try
+										{
+											if (Main.econf.getBoolean("PlayEffect"))
+											{
+												for (int a = 0; a < 500; a++)
+												{
+													e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.CLOUD, 5);
+												}
+											}
+										}
+										catch (Exception ex)
+										{
+											ex.printStackTrace();
+											System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
+										}
+										
 																
 										if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
 										{
@@ -353,11 +377,33 @@ public class Event  implements Listener
 								
 								//e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
 
-								//e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.EXPLODE, 1, 0);
-								
-								for (int a = 0; a < 500; a++)
+								try
 								{
-									e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.EXPLOSION_HUGE, 5);
+									if (Main.econf.getBoolean("PlaySound"))
+									{
+										e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_GENERIC_EXPLODE, 1, 0);
+									}
+								}
+								catch (Exception ex)
+								{
+									ex.printStackTrace();
+									System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
+								}
+								
+								try
+								{
+									if (Main.econf.getBoolean("PlayEffect"))
+									{
+										for (int a = 0; a < 500; a++)
+										{
+											e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.EXPLOSION_HUGE, 5);
+										}
+									}
+								}
+								catch (Exception ex)
+								{
+									ex.printStackTrace();
+									System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
 								}
 								
 								e.getPlayer().sendMessage(Main.format("b", Main.lang("claim-unclaimed")));

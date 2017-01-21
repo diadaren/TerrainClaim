@@ -143,4 +143,25 @@ public class Functions {
 			}
 		}
 	}
+	
+	protected static void GenerateConfig(String name)
+	{
+		File cfile = new File("plugins/TerrainClaim/" + name + ".yml");
+		
+		if (!cfile.exists())
+		{
+			try 
+			{
+				JarFile file = new JarFile(URLDecoder.decode(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
+				ZipEntry entry = file.getEntry("configs/" + name + ".yml");
+				InputStream inputStream = file.getInputStream(entry);
+				
+				Files.copy(inputStream, Paths.get("plugins/TerrainClaim/" + name + ".yml"));
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
 }
