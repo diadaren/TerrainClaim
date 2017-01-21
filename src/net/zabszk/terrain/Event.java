@@ -310,6 +310,8 @@ public class Event  implements Listener
 						{
 							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
 							{
+								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
+								
 								File configfile = new File("plugins/TerrainClaim/terrains.yml");
 								FileConfiguration config = YamlConfiguration.loadConfiguration(configfile);
 								
@@ -349,7 +351,7 @@ public class Event  implements Listener
 									e.getPlayer().updateInventory();
 								}
 								
-								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
+								//e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
 
 								//e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.EXPLODE, 1, 0);
 								
