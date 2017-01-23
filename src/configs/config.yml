@@ -1,0 +1,13 @@
+PluginDisplayName: TerrainClaim
+Lang: en
+CheckForWorldGuardRegions: true
+TerrainBlock: DIAMOND_ORE
+TerrainBlockName: &9&lTerrainBlock
+TerrainBlockLore:
+- &6Protects a chunk (16x16).
+Enable-PvP: false
+AddedVsNonadded: true
+Enable-PvE: false
+Enable-EvE: false
+Enable-Creeper: false
+AllowMetrics: true

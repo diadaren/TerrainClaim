@@ -1,0 +1,9 @@
+#!!! WARNING !!!
+#! This feautres are cool, but buggy. !
+#! After enabling something here,
+#! try to claim some chunk and unclaim it.
+#! Then check console for errors.
+#!!! WARNING !!!
+
+PlaySound: false
+PlayEffect: false
