@@ -1,4 +1,5 @@
-DO-NOT-CHANGE-lang-ver: 1
+#Translation made by zabszk (author of the plugin)
+DO-NOT-CHANGE-lang-ver: 2
 tp-done: "Zostales przeteleportowany na wskazany teren."
 tp-not-found: "Nie mozemy znalezc wskazanego terenu."
 list-empty: "Nie posiadasz zadnych terenow."

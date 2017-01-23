@@ -34,20 +34,12 @@ public class Main extends JavaPlugin
 	private static File langfile;
 	protected static FileConfiguration langconf;
 	
-	private static File wfile;
-	protected static FileConfiguration wconf;
-	
 	private static Event event;
-	
-	protected static ItemStack BlokTerenu;
 	
 	private static File configfile;
 	protected static FileConfiguration config;
 	
-	private static File efile;
-	protected static FileConfiguration econf;
-	
-	public static final int LangVersion = 1;
+	public static final int LangVersion = 2;
 	
 	@Override
 	public void onEnable()
@@ -55,83 +47,6 @@ public class Main extends JavaPlugin
 		plugin = this;
 		instance = this;
 		event = new Event();
-		
-		configfile = new File("plugins/TerrainClaim/terrains.yml");
-		config = YamlConfiguration.loadConfiguration(configfile);
-		
-		wfile = new File("plugins/TerrainClaim/worlds.yml");
-		wconf = YamlConfiguration.loadConfiguration(wfile);
-		
-		try
-		{
-			if (!configfile.exists()) configfile.createNewFile();
-		}
-		catch (IOException e)
-		{
-			System.out.println("[TerrainClaim] Config file creation error.");
-		}
-		
-		try
-		{
-			if (!wfile.exists()) wfile.createNewFile();
-		}
-		catch (IOException e)
-		{
-			System.out.println("[TerrainClaim] Worlds file creation error.");
-		}
-		
-		List<String> desc = new ArrayList<String>();
-		
-		desc.add("&6Protects a chunk (16x16).");
-		
-		config.addDefault("PluginDisplayName", "TerrainClaim");
-		config.addDefault("Lang", "en");
-		config.addDefault("CheckForWorldGuardRegions", true);
-		config.addDefault("TerrainBlock", "DIAMOND_ORE");
-		config.addDefault("TerrainBlockName", "&9&lTerrain Block");
-		config.addDefault("TerrainBlockLore", desc);
-		config.addDefault("Enable-PvP", false);
-		config.addDefault("Enable-AddedVsNonadded", true);
-		config.addDefault("Enable-PvE", false);
-		config.addDefault("Enable-EvE", false);
-		config.addDefault("Enable-Creeper", false);
-		config.addDefault("AllowMetrics", true);
-		config.addDefault("Terrains", new ArrayList<String>());
-		config.options().copyDefaults(true);
-		
-		try
-		{
-			config.save(configfile);
-		}
-		catch (IOException e)
-		{
-			System.out.println("[TerrainClaim] Config file saving error.");
-		}
-		
-		wconf.addDefault("UseBlacklist", false);
-		wconf.addDefault("BlacklistedWorlds", new ArrayList<String>());
-		
-		wconf.addDefault("UseWhitelist", false);
-		wconf.addDefault("WhitelistedWorlds", new ArrayList<String>());
-		
-		wconf.options().copyDefaults(true);
-		
-		try {
-			wconf.save(wfile);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
-		File path = new File("plugins/TerrainClaim/lang/");
-		
-		try
-		{
-			if (!path.exists()) path.mkdir();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 		
 		Reload();
 		
@@ -191,10 +106,7 @@ public class Main extends JavaPlugin
 					
 					if (!search.equals(""))
 					{
-						configfile = new File("plugins/TerrainClaim/terrains.yml");
-						config = YamlConfiguration.loadConfiguration(configfile);
-						
-						List<String> tereny = (List<String>) config.get("Terrains");
+						List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 						Boolean found = false;
 						
 						for (int i = 0; i < tereny.size(); i++)
@@ -244,10 +156,7 @@ public class Main extends JavaPlugin
 						
 						if (!search.equals(""))
 						{
-							configfile = new File("plugins/TerrainClaim/terrains.yml");
-							config = YamlConfiguration.loadConfiguration(configfile);
-							
-							List<String> tereny = (List<String>) config.get("Terrains");
+							List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 							Boolean found = false;
 							
 							for (int i = 0; i < tereny.size(); i++)
@@ -296,13 +205,10 @@ public class Main extends JavaPlugin
 						
 						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.getInstance().Perm("rename.others", sender, false, true))
 						{
-							configfile = new File("plugins/TerrainClaim/terrains.yml");
-							config = YamlConfiguration.loadConfiguration(configfile);
-							
 							String search = args[1].replace(";", ".").replace(":", ".");
 							String target = tconfig.getString("Owner");
 							
-							List<String> tereny = (List<String>) config.get("Terrains");
+							List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 							Boolean found = false;
 							
 							for (int i = 0; i < tereny.size(); i++)
@@ -326,7 +232,7 @@ public class Main extends JavaPlugin
 									System.out.println("[TerrainClaim] Config file saving error.");
 								}
 								
-								tereny = (List<String>) config.getList("Terrains");
+								tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 								
 								found = false;
 								
@@ -347,7 +253,7 @@ public class Main extends JavaPlugin
 									}
 								}
 								
-								config.set("Terrains", tereny);
+								Storage.setclaims(tereny);
 								
 								try
 								{
@@ -377,10 +283,7 @@ public class Main extends JavaPlugin
 						{
 							if (args.length == 4 && args[3].equalsIgnoreCase("-a"))
 							{
-								configfile = new File("plugins/TerrainClaim/terrains.yml");
-								config = YamlConfiguration.loadConfiguration(configfile);
-								
-								List<String> tereny = (List<String>) config.get("Terrains");
+								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 								
 								for (int i = 0; i < tereny.size(); i++)
 								{
@@ -419,10 +322,7 @@ public class Main extends JavaPlugin
 					{
 						if (args.length == 3 && args[2].equalsIgnoreCase("-a"))
 						{
-							configfile = new File("plugins/TerrainClaim/terrains.yml");
-							config = YamlConfiguration.loadConfiguration(configfile);
-							
-							List<String> tereny = (List<String>) config.get("Terrains");
+							List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 							
 							for (int i = 0; i < tereny.size(); i++)
 							{
@@ -462,9 +362,9 @@ public class Main extends JavaPlugin
 					{
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
-						sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Information about claim: " + ChatColor.AQUA + ch.getX() + "," + ch.getZ());
-						sender.sendMessage(ChatColor.DARK_AQUA + "Owner: " + ChatColor.AQUA + tconfig.getString("Owner"));
-						sender.sendMessage(ChatColor.DARK_AQUA + "Name: " + ChatColor.AQUA + tconfig.getString("Name"));
+						sender.sendMessage(lang("info-about").replace("%claim", ch.getX() + "," + ch.getZ()));
+						sender.sendMessage(lang("info-owner").replace("%nick", tconfig.getString("Owner")));
+						sender.sendMessage(lang("info-name").replace("%name", tconfig.getString("Name")));
 						
 						List<String> Allowed = (List<String>) tconfig.getList("Allowed");
 						
@@ -477,7 +377,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(ChatColor.DARK_AQUA + "Administrators: " + ChatColor.AQUA + disp);
+						sender.sendMessage(lang("info-admins").replace("%nick", disp));
 						
 						disp = "";
 						
@@ -488,7 +388,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(ChatColor.DARK_AQUA + "Members: " + ChatColor.AQUA + disp);
+						sender.sendMessage(lang("info-members").replace("%nick", disp));
 						
 						disp = "";
 						
@@ -499,7 +399,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(ChatColor.DARK_AQUA + "Helpers: " + ChatColor.AQUA + disp);
+						sender.sendMessage(lang("info-helpers").replace("%nick", disp));
 					}
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
@@ -532,7 +432,7 @@ public class Main extends JavaPlugin
 					{
 						if (t.getName().equalsIgnoreCase(target))
 						{
-							ItemStack bt = BlokTerenu;
+							ItemStack bt = Functions.getTerrainBlock();
 							
 							bt.setAmount(i);
 							
@@ -635,43 +535,33 @@ public class Main extends JavaPlugin
 	
 	public static void Reload()
 	{
+		Functions.GenerateConfig("config");
+		Functions.GenerateConfig("worlds");
+		Functions.GenerateConfig("claims");
+		Functions.GenerateConfig("experimental");
+		
+		File path = new File("plugins/TerrainClaim/lang/");
+		
+		try
+		{
+			if (!path.exists()) path.mkdir();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
 		Functions.GenerateLang("en");
 		Functions.GenerateLang("pl");
 		Functions.GenerateLang("fr"); //Translation made by: Alphayt (https://dev.bukkit.org/members/Alphayt)
 		
-		Functions.GenerateConfig("experimental");
+		Functions.MigrateConfig();
 		
-		configfile = new File("plugins/TerrainClaim/terrains.yml");
+		configfile = new File("plugins/TerrainClaim/config.yml");
 		config = YamlConfiguration.loadConfiguration(configfile);
-		
-		wfile = new File("plugins/TerrainClaim/worlds.yml");
-		wconf = YamlConfiguration.loadConfiguration(wfile);
-		
-		efile = new File("plugins/TerrainClaim/experimental.yml");
-		econf = YamlConfiguration.loadConfiguration(efile);
 		
 		langfile = new File("plugins/TerrainClaim/lang/" + config.getString("Lang") + ".yml");
 		langconf = YamlConfiguration.loadConfiguration(langfile);
-		
-		BlokTerenu = new ItemStack(Material.getMaterial(config.getString("TerrainBlock")), 1);
-		
-		ItemMeta meta = Bukkit.getItemFactory().getItemMeta(BlokTerenu.getType());
-		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', config.getString("TerrainBlockName")));
-		
-		List<String> desc = new ArrayList<String>();
-		List<String> lore = new ArrayList<String>();
-		
-		desc.clear();
-		desc = config.getStringList("TerrainBlockLore");
-		
-		for (String l:desc)
-		{
-			lore.add(ChatColor.translateAlternateColorCodes('&', l));
-		}
-		
-		meta.setLore(lore);
-		
-		BlokTerenu.setItemMeta(meta);
 	}
 	
 	protected static WorldGuardPlugin getWorldGuard() {
@@ -737,6 +627,8 @@ public class Main extends JavaPlugin
 	
 	public static boolean CheckWorld(World world)
 	{
+		FileConfiguration wconf = Storage.get(cfg.worlds());
+		
 		return ((!wconf.getBoolean("UseBlacklist") || !wconf.getStringList("BlacklistedWorlds").contains(world.getName())) && (!wconf.getBoolean("UseWhitelist") || wconf.getStringList("WhitelistedWorlds").contains(world.getName())));
 	}
 }
