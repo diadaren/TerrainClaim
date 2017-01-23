@@ -1,4 +1,5 @@
-DO-NOT-CHANGE-lang-ver: 1
+#Translation made by zabszk (author of the plugin)
+DO-NOT-CHANGE-lang-ver: 2
 tp-done: "You have been teleported to selected claim."
 tp-not-found: "We cannot find that claim."
 list-empty: "You don't own any chunks."
@@ -19,6 +20,12 @@ rm-fail-removed: "Player &b&l%nick &e&lwasn't added to &b&l%claim&3&l."
 rm-not-claimed: "This chunk is not claimed."
 rm-not-permitted: "This is not your claim and you aren't administrator of this claim."
 info-not-claimed: "This chunk is not claimed."
+info-about: "&3&lInformation about claim: &b%claim&3."
+info-owner: "&3Owner: &b%nick"
+info-name: "&3Name: &b%name"
+info-admins: "&3Administrators: &b%nick"
+info-members: "&3Members: &b%nick"
+info-helpers: "&3Helpers: &b%nick"
 block-give: "You gave %amount terrain block(s) to player %nick."
 block-become: "You became %amount terrain block(s) from player %nick."
 action-blocked: "This chunk is protected using terrain block."

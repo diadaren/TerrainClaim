@@ -194,7 +194,7 @@ public class Event  implements Listener
 			if (e.getPlayer().getItemInHand().getType() == Material.getMaterial(Main.config.getString("TerrainBlock")))
 			{
 				ItemStack i = e.getPlayer().getItemInHand();
-				ItemStack b = Main.BlokTerenu;
+				ItemStack b = Functions.getTerrainBlock();
 				
 				ItemMeta im = i.getItemMeta();
 				ItemMeta bm = b.getItemMeta();
@@ -206,9 +206,9 @@ public class Event  implements Listener
 					if (e.getBlockFace() != BlockFace.UP) e.getPlayer().sendMessage(Main.format("4", Main.lang("click-on-top")));
 					else
 					{
-						if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation()))
+						if (Main.CheckWorld(e.getClickedBlock().getWorld()))
 						{
-							if (Main.CheckWorld(e.getClickedBlock().getWorld()))
+							if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation()))
 							{
 								if (Main.Perm("claim", (CommandSender) e.getPlayer(), true, true))
 								{
@@ -249,29 +249,17 @@ public class Event  implements Listener
 											System.out.println("[TerrainClaim] Config file saving error.");
 										}
 										
-										File configfile = new File("plugins/TerrainClaim/terrains.yml");
-										FileConfiguration config = YamlConfiguration.loadConfiguration(configfile);
-										
-										List<String> tereny = (List<String>) config.getList("Terrains");
+										List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 										
 										tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getName() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
 										
-										config.set("Terrains", tereny);
-										
-										try
-										{
-											config.save(configfile);
-										}
-										catch (IOException ex)
-										{
-											System.out.println("[TerrainClaim] Config file saving error.");
-										}
+										Storage.setclaims(tereny);
 										
 										e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation().add(0, 1, 0)).setType(Material.BEDROCK);
 										
 										try
 										{
-											if (Main.econf.getBoolean("PlaySound"))
+											if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
 											{
 												e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
 											}
@@ -284,7 +272,7 @@ public class Event  implements Listener
 										
 										try
 										{
-											if (Main.econf.getBoolean("PlayEffect"))
+											if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
 											{
 												for (int a = 0; a < 500; a++)
 												{
@@ -309,9 +297,9 @@ public class Event  implements Listener
 									}
 								}
 							}
-							else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-err-world")));
+							else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-WG")));
 						}
-						else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-WG")));
+						else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-err-world")));
 					}
 					
 					e.getPlayer().updateInventory();
@@ -336,10 +324,7 @@ public class Event  implements Listener
 							{
 								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
 								
-								File configfile = new File("plugins/TerrainClaim/terrains.yml");
-								FileConfiguration config = YamlConfiguration.loadConfiguration(configfile);
-								
-								List<String> tereny = (List<String>) config.getList("Terrains");
+								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 								
 								String del = "";
 								
@@ -352,22 +337,13 @@ public class Event  implements Listener
 								
 								if (!del.equals("")) tereny.remove(del);
 								
-								config.set("Terrains", tereny);
-								
-								try
-								{
-									config.save(configfile);
-								}
-								catch (IOException ex)
-								{
-									System.out.println("[TerrainClaim] Config file saving error.");
-								}
+								Storage.setclaims(tereny);
 								
 								tconf.delete();
 								
 								if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
 								{
-									ItemStack bt = Main.BlokTerenu;
+									ItemStack bt = Functions.getTerrainBlock();
 									
 									bt.setAmount(1);
 									
@@ -379,7 +355,7 @@ public class Event  implements Listener
 
 								try
 								{
-									if (Main.econf.getBoolean("PlaySound"))
+									if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
 									{
 										e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_GENERIC_EXPLODE, 1, 0);
 									}
@@ -392,7 +368,7 @@ public class Event  implements Listener
 								
 								try
 								{
-									if (Main.econf.getBoolean("PlayEffect"))
+									if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
 									{
 										for (int a = 0; a < 500; a++)
 										{

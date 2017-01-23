@@ -1,4 +1,5 @@
-DO-NOT-CHANGE-lang-ver: 1
+#Translation made by Alphayt (https://dev.bukkit.org/members/Alphayt)
+DO-NOT-CHANGE-lang-ver: 2
 tp-done: "Vous avez été téléporté au claim sélectionné"
 tp-not-found: "Impossible de trouver le claim"
 list-empty: "Vous ne possedez aucuns chunks."
@@ -19,6 +20,12 @@ rm-fail-removed: "Le joueur &b&l%nick &e&ln'était pas ajouté à &b&l%claim&3&l
 rm-not-claimed: "Ce chunk n'est pas claim."
 rm-not-permitted: "Ce n'est pas votre claim et vous n'êtes pas administrateur de ce claim."
 info-not-claimed: "Ce chunk n'est pas claim."
+info-about: "&3&lInformation sur le claim: &b%claim&3."
+info-owner: "&3Propriétaire: &b%nick"
+info-name: "&3Nom: &b%name"
+info-admins: "&3Administrateurs: &b%nick"
+info-members: "&3Membres: &b%nick"
+info-helpers: "&3Helpeurs: &b%nick"
 block-give: "Vous avez donné %amount terrain block(s) au joueur %nick."
 block-become: "Vous avez reçus %amount terrain block(s) de la part de %nick."
 action-blocked: "Ce chunk est protégé contre l'utilisation des terrain blocks."

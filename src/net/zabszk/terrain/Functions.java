@@ -6,20 +6,26 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class Functions {
 	public static void Add(File tconf, CommandSender sender, String target, String rnk)
 	{
 		FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 		
-		List<String> members = (List<String>) tconfig.get("Allowed");
+		List<String> members = tconfig.getStringList("Allowed");
 		int rank = -1;
 		int index = -1;
 		
@@ -83,7 +89,7 @@ public class Functions {
 	{
 		FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 		
-		List<String> members = (List<String>) tconfig.get("Allowed");
+		List<String> members = tconfig.getStringList("Allowed");
 		int id = -1;
 		
 		for (int i = 0; i < members.size(); i++)
@@ -127,41 +133,63 @@ public class Functions {
 			if (langconf.getInt("DO-NOT-CHANGE-lang-ver") != Main.LangVersion) langfile.delete();
 		}
 		
-		if (!langfile.exists())
-		{
-			try 
-			{
-				JarFile file = new JarFile(URLDecoder.decode(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
-				ZipEntry entry = file.getEntry("resources/" + name + ".yml");
-				InputStream inputStream = file.getInputStream(entry);
-				
-				Files.copy(inputStream, Paths.get("plugins/TerrainClaim/lang/" + name + ".yml"));
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
+		if (!langfile.exists()) Extract("resources/" + name + ".yml", "plugins/TerrainClaim/lang/ " + name + ".yml");
 	}
 	
 	protected static void GenerateConfig(String name)
 	{
 		File cfile = new File("plugins/TerrainClaim/" + name + ".yml");
 		
-		if (!cfile.exists())
+		if (!cfile.exists()) Extract("configs/" + name + ".yml", "plugins/TerrainClaim/" + name + ".yml");
+	}
+	
+	private static void Extract(String source, String target)
+	{
+		try 
 		{
-			try 
-			{
-				JarFile file = new JarFile(URLDecoder.decode(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
-				ZipEntry entry = file.getEntry("configs/" + name + ".yml");
-				InputStream inputStream = file.getInputStream(entry);
-				
-				Files.copy(inputStream, Paths.get("plugins/TerrainClaim/" + name + ".yml"));
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
+			JarFile file = new JarFile(URLDecoder.decode(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
+			ZipEntry entry = file.getEntry(source);
+			InputStream inputStream = file.getInputStream(entry);
+			
+			Files.copy(inputStream, Paths.get(target));
 		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static ItemStack getTerrainBlock()
+	{
+		ItemStack BlokTerenu = new ItemStack(Material.getMaterial(Main.config.getString("TerrainBlock")), 1);
+		
+		ItemMeta meta = Bukkit.getItemFactory().getItemMeta(BlokTerenu.getType());
+		meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Main.config.getString("TerrainBlockName")));
+		
+		List<String> desc = new ArrayList<String>();
+		List<String> lore = new ArrayList<String>();
+		
+		desc.clear();
+		desc = Main.config.getStringList("TerrainBlockLore");
+		
+		for (String l:desc)
+		{
+			lore.add(ChatColor.translateAlternateColorCodes('&', l));
+		}
+		
+		meta.setLore(lore);
+		
+		BlokTerenu.setItemMeta(meta);
+		
+		return BlokTerenu;
+	}
+	
+	protected static void MigrateConfig()
+	{
+		//TODO: Lang in PL
+		//TODO: This void (moves from old terrain.yml to config.yml and claims.yml).
+		//TODO: Custom subcommands and aliases.
+		//TODO: Change version.
+		//TODO: Tests
 	}
 }
