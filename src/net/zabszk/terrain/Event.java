@@ -133,7 +133,7 @@ public class Event  implements Listener
 				if (toc.exists() && fromc.exists())
 				{
 					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")))
-						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nickl", from.getString("Owner")).replace("%nickw", to.getString("Owner"))));
+						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", from.getString("Owner")).replace("%nickw", to.getString("Owner"))));
 				}
 				else
 				{
