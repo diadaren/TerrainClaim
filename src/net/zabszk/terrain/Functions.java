@@ -186,10 +186,38 @@ public class Functions {
 	
 	protected static void MigrateConfig()
 	{
-		//TODO: Lang in PL
-		//TODO: This void (moves from old terrain.yml to config.yml and claims.yml).
+		if (Storage.getfile(cfg.OLDconfig()).exists())
+		{
+			YamlConfiguration file = Storage.get(cfg.OLDconfig());
+			YamlConfiguration c = Storage.get(cfg.config());
+			
+			Storage.setclaims(file.getStringList("Terrains"));
+			
+			Copy("PluginDisplayName", file, c);
+			Copy("Lang", file, c);
+			Copy("CheckForWorldGuardRegions", file, c);
+			Copy("TerrainBlock", file, c);
+			Copy("TerrainBlockName", file, c);
+			Copy("TerrainBlockLore", file, c);
+			Copy("Enable-PvP", file, c);
+			Copy("Enable-AddedVsNonadded", file, c);
+			Copy("Enable-PvE", file, c);
+			Copy("Enable-EvE", file, c);
+			Copy("Enable-Creeper", file, c);
+			Copy("AllowMetrics", file, c);
+			
+			Storage.save(cfg.config(), c);
+			
+			Storage.getfile(cfg.OLDconfig()).delete();
+		}
+		
 		//TODO: Custom subcommands and aliases.
 		//TODO: Change version.
 		//TODO: Tests
+	}
+	
+	private static void Copy(String value, YamlConfiguration old, YamlConfiguration n)
+	{
+		n.set(value, old.get(value));
 	}
 }

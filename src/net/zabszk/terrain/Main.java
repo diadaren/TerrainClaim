@@ -540,6 +540,8 @@ public class Main extends JavaPlugin
 		Functions.GenerateConfig("claims");
 		Functions.GenerateConfig("experimental");
 		
+		Functions.MigrateConfig();
+		
 		File path = new File("plugins/TerrainClaim/lang/");
 		
 		try
@@ -551,8 +553,8 @@ public class Main extends JavaPlugin
 			e.printStackTrace();
 		}
 		
-		Functions.GenerateLang("en");
-		Functions.GenerateLang("pl");
+		Functions.GenerateLang("en"); //Translation made by: zabszk (https://dev.bukkit.org/members/zabszk)
+		Functions.GenerateLang("pl"); //Translation made by: zabszk (https://dev.bukkit.org/members/zabszk)
 		Functions.GenerateLang("fr"); //Translation made by: Alphayt (https://dev.bukkit.org/members/Alphayt)
 		
 		Functions.MigrateConfig();

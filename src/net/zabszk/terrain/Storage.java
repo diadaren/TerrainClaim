@@ -14,6 +14,11 @@ public class Storage {
 		return YamlConfiguration.loadConfiguration(configfile);
 	}
 	
+	public static File getfile(String name)
+	{
+		return new File(name);
+	}
+	
 	public static void setclaims(List<String> claims)
 	{
 		YamlConfiguration f = get(cfg.claims());
