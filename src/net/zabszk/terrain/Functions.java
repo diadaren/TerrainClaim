@@ -13,10 +13,16 @@ import java.util.zip.ZipEntry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.Effect;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -122,6 +128,86 @@ public class Functions {
 		}
 	}
 	
+	protected static void Claim(Player target, String type)
+	{
+		Chunk ch = target.getLocation().getChunk();
+		
+		File tconf = new File("plugins/TerrainClaim/claims/" + target.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+		if (tconf.exists()) target.sendMessage(Main.format("4", Main.lang("already-claimed")));
+		else
+		{
+			try
+			{
+				if (!tconf.exists()) tconf.createNewFile();
+			}
+			catch (IOException ex)
+			{
+				System.out.println("[TerrainClaim] Config file creation error.");
+			}
+			
+			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			
+			Location l = target.getLocation().add(0, 1, 0);
+			
+			tconfig.set("Name", target.getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
+			tconfig.set("Owner", target.getName());
+			tconfig.set("Allowed", new ArrayList<String>());
+			tconfig.set("world", target.getWorld().getName());
+			tconfig.set("X", l.getBlockX());
+			tconfig.set("Y", l.getBlockY());
+			tconfig.set("Z", l.getBlockZ());
+			tconfig.set("Chunk", ch.getX() + "," + ch.getZ());
+			tconfig.set("Method", type);
+			
+			try
+			{
+				tconfig.save(tconf);
+			}
+			catch (IOException ex)
+			{
+				System.out.println("[TerrainClaim] Config file saving error.");
+			}
+			
+			List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+			
+			tereny.add(target.getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + target.getName() + ";" + target.getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";" + type);
+			
+			Storage.setclaims(tereny);
+				
+			try
+			{
+				if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
+				{
+					target.getWorld().playSound(target.getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+				System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
+			}
+			
+			try
+			{
+				if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
+				{
+					for (int a = 0; a < 500; a++)
+					{
+						target.getWorld().playEffect(target.getLocation().add(0, 1, 0), Effect.CLOUD, 5);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+				System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
+			}
+			
+			
+			target.sendMessage(Main.format("3", Main.lang("claim-done")));
+		}
+	}
+	
 	protected static void GenerateLang(String name)
 	{
 		File langfile = new File("plugins/TerrainClaim/lang/" + name + ".yml");
@@ -191,7 +277,14 @@ public class Functions {
 			YamlConfiguration file = Storage.get(cfg.OLDconfig());
 			YamlConfiguration c = Storage.get(cfg.config());
 			
-			Storage.setclaims(file.getStringList("Terrains"));
+			List<String> tereny = file.getStringList("Terrains");
+			
+			for (int i = 0; i < tereny.size(); i++)
+			{
+				tereny.set(i, tereny.get(i) + ";B");
+			}
+			
+			Storage.setclaims(tereny);
 			
 			Copy("PluginDisplayName", file, c);
 			Copy("Lang", file, c);
@@ -213,11 +306,9 @@ public class Functions {
 		
 		//TODO: Command claiming
 		//TODO: /tr settp - for command claimed terrains
-		//TODO: /tr list - colorize (by command in one color and by command block in second)
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
-		//TODO: Claiming limits
-		//TODO: Change version.
+		//TODO: Change version
 		//TODO: Tests
 	}
 	

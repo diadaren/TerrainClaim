@@ -85,6 +85,14 @@ public class Main extends JavaPlugin
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
 			
 			sender.sendMessage("");
+			sender.sendMessage("");
+			sender.sendMessage(lang("claim-command-max").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))));
+			sender.sendMessage("");
+			
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("claim"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
+			
+			sender.sendMessage("");
 			
 			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
 			if (admin || sender.hasPermission("terrain.block")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("block") + " " + lang("help-nick-optional") + " " + lang("help-amount-optional"));
@@ -120,7 +128,10 @@ public class Main extends JavaPlugin
 							if (tereny.get(i).split(";")[3].equalsIgnoreCase(search))
 							{
 								if (!found) sender.sendMessage(format("3", lang("list")));
-								sender.sendMessage(ChatColor.GRAY + "- " + tereny.get(i).split(";")[4]);
+								
+								if (args[5].equalsIgnoreCase("B")) sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.GREEN + " [BLOCK]");
+								else if (args[5].equalsIgnoreCase("C")) sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.AQUA + " [COMMAND]");
+								else sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.LIGHT_PURPLE + " [OTHER]");
 								
 								found = true;
 							}
@@ -407,6 +418,43 @@ public class Main extends JavaPlugin
 						
 						sender.sendMessage(lang("info-helpers").replace("%nick", disp));
 					}
+				}
+				else sender.sendMessage(format("4", "This command can be executed only from game level."));
+			}
+			else if (args[0].equalsIgnoreCase("claim") && Perm("claim", sender, true, true))
+			{
+				if (sender instanceof Player)
+				{
+					if (config.getBoolean("AllowCommandClaiming"))
+					{
+						Player target = (Player) sender;
+						
+						if (CheckWorld(target.getWorld()))
+						{
+							if (!config.getBoolean("CheckForWorldGuardRegions") || getWorldGuard() == null || getWorldGuard().canBuild(target, target.getLocation()))
+							{
+								int count = 0;
+								
+								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+								Boolean found = false;
+								
+								for (int i = 0; i < tereny.size(); i++)
+								{
+									if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()))
+									{
+										if (!found) sender.sendMessage(format("3", lang("list")));
+										
+										if (args[5].equalsIgnoreCase("C")) count++;
+									}
+								}
+								
+								if (count < config.getInt("CommandClaimsLimit") || config.getInt("CommandClaimsLimit") == -1) Functions.Claim(target, "C");
+								else sender.sendMessage(lang("claim-command-limit").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))));
+							}
+						}
+						else sender.sendMessage(Main.format("4", Main.lang("claim-err-world")));
+					}
+					else sender.sendMessage(Main.format("4", Main.lang("claim-command-disabled")));
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
 			}

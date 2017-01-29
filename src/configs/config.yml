@@ -10,4 +10,7 @@ AddedVsNonadded: true
 Enable-PvE: false
 Enable-EvE: false
 Enable-Creeper: false
+AllowBlockClaiming: true
+AllowCommandClaiming: false
+CommandClaimsLimit: -1
 AllowMetrics: true

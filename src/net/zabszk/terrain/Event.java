@@ -3,19 +3,15 @@ package net.zabszk.terrain;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Effect;
-//import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-//import org.bukkit.Sound;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,7 +28,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
-//import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -203,104 +198,109 @@ public class Event  implements Listener
 				{
 					e.setCancelled(true);
 					
-					if (e.getBlockFace() != BlockFace.UP) e.getPlayer().sendMessage(Main.format("4", Main.lang("click-on-top")));
-					else
+					if (Main.config.getBoolean("AllowBlockClaiming"))
 					{
-						if (Main.CheckWorld(e.getClickedBlock().getWorld()))
+						if (e.getBlockFace() != BlockFace.UP) e.getPlayer().sendMessage(Main.format("4", Main.lang("click-on-top")));
+						else
 						{
-							if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation()))
+							if (Main.CheckWorld(e.getClickedBlock().getWorld()))
 							{
-								if (Main.Perm("claim", (CommandSender) e.getPlayer(), true, true))
+								if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation()))
 								{
-									Chunk ch = e.getClickedBlock().getLocation().getChunk();
-									
-									File tconf = new File("plugins/TerrainClaim/claims/" + e.getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-									if (tconf.exists()) e.getPlayer().sendMessage(Main.format("4", Main.lang("already-claimed")));
-									else
+									if (Main.Perm("claim", (CommandSender) e.getPlayer(), true, true))
 									{
-										try
+										Chunk ch = e.getClickedBlock().getLocation().getChunk();
+										
+										File tconf = new File("plugins/TerrainClaim/claims/" + e.getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+										if (tconf.exists()) e.getPlayer().sendMessage(Main.format("4", Main.lang("already-claimed")));
+										else
 										{
-											if (!tconf.exists()) tconf.createNewFile();
-										}
-										catch (IOException ex)
-										{
-											System.out.println("[TerrainClaim] Config file creation error.");
-										}
-										
-										FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-										
-										Location l = e.getClickedBlock().getLocation().add(0, 1, 0);
-										
-										tconfig.set("Name", e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
-										tconfig.set("Owner", e.getPlayer().getName());
-										tconfig.set("Allowed", new ArrayList<String>());
-										tconfig.set("world", e.getPlayer().getWorld().getName());
-										tconfig.set("X", l.getBlockX());
-										tconfig.set("Y", l.getBlockY());
-										tconfig.set("Z", l.getBlockZ());
-										tconfig.set("Chunk", ch.getX() + "," + ch.getZ());
-										
-										try
-										{
-											tconfig.save(tconf);
-										}
-										catch (IOException ex)
-										{
-											System.out.println("[TerrainClaim] Config file saving error.");
-										}
-										
-										List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-										
-										tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getName() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
-										
-										Storage.setclaims(tereny);
-										
-										e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation().add(0, 1, 0)).setType(Material.BEDROCK);
-										
-										try
-										{
-											if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
+											try
 											{
-												e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
+												if (!tconf.exists()) tconf.createNewFile();
 											}
-										}
-										catch (Exception ex)
-										{
-											ex.printStackTrace();
-											System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
-										}
-										
-										try
-										{
-											if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
+											catch (IOException ex)
 											{
-												for (int a = 0; a < 500; a++)
+												System.out.println("[TerrainClaim] Config file creation error.");
+											}
+											
+											FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+											
+											Location l = e.getClickedBlock().getLocation().add(0, 1, 0);
+											
+											tconfig.set("Name", e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
+											tconfig.set("Owner", e.getPlayer().getName());
+											tconfig.set("Allowed", new ArrayList<String>());
+											tconfig.set("world", e.getPlayer().getWorld().getName());
+											tconfig.set("X", l.getBlockX());
+											tconfig.set("Y", l.getBlockY());
+											tconfig.set("Z", l.getBlockZ());
+											tconfig.set("Chunk", ch.getX() + "," + ch.getZ());
+											tconfig.set("Method", "B");
+											
+											try
+											{
+												tconfig.save(tconf);
+											}
+											catch (IOException ex)
+											{
+												System.out.println("[TerrainClaim] Config file saving error.");
+											}
+											
+											List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+											
+											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getName() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
+											
+											Storage.setclaims(tereny);
+											
+											e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation().add(0, 1, 0)).setType(Material.BEDROCK);
+											
+											try
+											{
+												if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
 												{
-													e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.CLOUD, 5);
+													e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
 												}
 											}
+											catch (Exception ex)
+											{
+												ex.printStackTrace();
+												System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
+											}
+											
+											try
+											{
+												if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
+												{
+													for (int a = 0; a < 500; a++)
+													{
+														e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.CLOUD, 5);
+													}
+												}
+											}
+											catch (Exception ex)
+											{
+												ex.printStackTrace();
+												System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
+											}
+											
+																	
+											if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
+											{
+												if (e.getPlayer().getItemInHand().getAmount() > 1) e.getPlayer().getItemInHand().setAmount(e.getPlayer().getItemInHand().getAmount() - 1);
+												else e.getPlayer().setItemInHand(new ItemStack(Material.AIR));
+											}
+											
+											e.getPlayer().sendMessage(Main.format("3", Main.lang("claim-done")));
 										}
-										catch (Exception ex)
-										{
-											ex.printStackTrace();
-											System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
-										}
-										
-																
-										if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
-										{
-											if (e.getPlayer().getItemInHand().getAmount() > 1) e.getPlayer().getItemInHand().setAmount(e.getPlayer().getItemInHand().getAmount() - 1);
-											else e.getPlayer().setItemInHand(new ItemStack(Material.AIR));
-										}
-										
-										e.getPlayer().sendMessage(Main.format("3", Main.lang("claim-done")));
 									}
 								}
+								else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-WG")));
 							}
-							else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-WG")));
+							else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-err-world")));
 						}
-						else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-err-world")));
 					}
+					else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-block-disabled")));
 					
 					e.getPlayer().updateInventory();
 				}
