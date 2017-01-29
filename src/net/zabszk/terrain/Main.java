@@ -76,25 +76,31 @@ public class Main extends JavaPlugin
 			sender.sendMessage("");
 			sender.sendMessage("");
 			sender.sendMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "/terrain");
-			sender.sendMessage(ChatColor.AQUA + "/terrain add <nick> <rank> [-a]");
-			sender.sendMessage(ChatColor.GRAY + "Help: /terrain ranks");
-			sender.sendMessage(ChatColor.AQUA + "/terrain remove <nick> [-a]");
-			sender.sendMessage(ChatColor.AQUA + "/terrain list");
-			sender.sendMessage(ChatColor.AQUA + "/terrain tp <terrain name>");
-			sender.sendMessage(ChatColor.AQUA + "/terrain rename <new name>");
-			sender.sendMessage(ChatColor.AQUA + "/terrain info");
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("add") + " " + lang("help-nick") + " " + lang("help-rank") + " [-a]");
+			sender.sendMessage(ChatColor.GRAY + lang("help-ranks-help") + " /" + label + " " + GetAlias("ranks"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("remove") + " " + lang("help-nick") + " [-a]");
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("list"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("tp") + " " + lang("help-terrain-name"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("rename") + " " + lang("help-new-name"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
 			
 			sender.sendMessage("");
 			
-			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/terrain reload");
-			if (admin || sender.hasPermission("terrain.block")) sender.sendMessage(ChatColor.DARK_RED + "/terrain block [nick] [amount]");
-			if (admin || sender.hasPermission("terrain.list.others")) sender.sendMessage(ChatColor.DARK_RED + "/terrain list [nick]");
-			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/terrain tp <owner>:<name>");
+			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
+			if (admin || sender.hasPermission("terrain.block")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("block") + " " + lang("help-nick-optional") + " " + lang("help-amount-optional"));
+			if (admin || sender.hasPermission("terrain.list.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("list") + " " + lang("help-nick-optional"));
+			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("tp") + " " + lang("help-owner") + ":" + lang("help-nick"));
 			
 			sender.sendMessage("");
 		}
 		else
 		{
+			if (args.length > 0)
+			{
+				String alias = IsAlias(args[0]);
+				if (alias.length() > 0) args[0] = alias;
+			}
+			
 			if ((args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("ls")) && Perm("list", sender, true, true))
 			{
 				if (sender instanceof Player || args.length > 1)
@@ -132,16 +138,16 @@ public class Main extends JavaPlugin
 			}
 			else if (args[0].equalsIgnoreCase("ranks"))
 			{
-				sender.sendMessage(ChatColor.GRAY + "Ranks:");
-				sender.sendMessage(ChatColor.GREEN + "- helper (0) - accessing chests, interacting");
-				sender.sendMessage(ChatColor.DARK_GREEN + "- member (1) - building and breaking blocks, accessing chests, interacting");
-				sender.sendMessage(ChatColor.GOLD + "- admin (2) - terrain management, building and breaking blocks, accessing chests, interacting");
+				sender.sendMessage(lang("help-ranks-header"));
+				sender.sendMessage(lang("help-ranks-helper"));
+				sender.sendMessage(lang("help-ranks-member"));
+				sender.sendMessage(lang("help-ranks-admin"));
 			}
 			else if (args[0].equalsIgnoreCase("tp") && Perm("tp", sender, true, true))
 			{
 				if (sender instanceof Player)
 				{
-					if (args.length != 2) sender.sendMessage(format("4", "Syntax: /teren tp <terrain name>"));
+					if (args.length != 2) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("tp") + " " + lang("help-terrain-name")));
 					else
 					{
 						String player = sender.getName();
@@ -276,7 +282,7 @@ public class Main extends JavaPlugin
 			{
 				if (sender instanceof Player)
 				{
-					if (args.length < 3) sender.sendMessage(format("4", "Syntax: /teren add <nick> <rank> [-a]"));
+					if (args.length < 3) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("add") + " " + lang("help-nick") + " " + lang("help-rank") + " [-a]"));
 					else
 					{
 						if (args[2].equalsIgnoreCase("helper") || args[2].equalsIgnoreCase("member") || args[2].equalsIgnoreCase("admin") || args[2].equalsIgnoreCase("0") || args[2].equalsIgnoreCase("1") || args[2].equalsIgnoreCase("2"))
@@ -308,7 +314,7 @@ public class Main extends JavaPlugin
 								}
 							}
 						}
-						else sender.sendMessage(format("4", "You provided an invalid rank. More on /terrain ranks."));
+						else sender.sendMessage(format("4", lang("add-wrong-rank").replace("%info", "/" + label + " " + GetAlias("ranks"))));
 					}
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
@@ -317,7 +323,7 @@ public class Main extends JavaPlugin
 			{
 				if (sender instanceof Player)
 				{
-					if (args.length < 2) sender.sendMessage(format("4", "Syntax: /terrain remove <nick> [-a]"));
+					if (args.length < 2) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("remove") + " " + lang("help-nick") + " [-a]"));
 					else
 					{
 						if (args.length == 3 && args[2].equalsIgnoreCase("-a"))
@@ -538,6 +544,7 @@ public class Main extends JavaPlugin
 		Functions.GenerateConfig("config");
 		Functions.GenerateConfig("worlds");
 		Functions.GenerateConfig("claims");
+		Functions.GenerateConfig("aliases");
 		Functions.GenerateConfig("experimental");
 		
 		Functions.MigrateConfig();
@@ -625,6 +632,27 @@ public class Main extends JavaPlugin
 		}
 		
 		return result;
+	}
+	
+	public static String IsAlias(String arg)
+	{
+		FileConfiguration file = Storage.get(cfg.aliases());
+		
+		if (file.getString("alias-add").equalsIgnoreCase(arg)) return "add";
+		else if (file.getString("alias-remove").equalsIgnoreCase(arg)) return "remove";
+		else if (file.getString("alias-list").equalsIgnoreCase(arg)) return "list";
+		else if (file.getString("alias-tp").equalsIgnoreCase(arg)) return "tp";
+		else if (file.getString("alias-rename").equalsIgnoreCase(arg)) return "rename";
+		else if (file.getString("alias-info").equalsIgnoreCase(arg)) return "info";
+		else if (file.getString("alias-block").equalsIgnoreCase(arg)) return "block";
+		else return "";
+	}
+	
+	public static String GetAlias(String subcommand)
+	{
+		String text = Storage.get(cfg.aliases()).getString("alias-" + subcommand);
+		if (text.length() > 0) return text;
+		else return subcommand;
 	}
 	
 	public static boolean CheckWorld(World world)

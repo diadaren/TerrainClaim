@@ -21,6 +21,11 @@ public class cfg {
 		return "plugins/TerrainClaim/experimental.yml";
 	}
 	
+	public static String aliases()
+	{
+		return "plugins/TerrainClaim/aliases.yml";
+	}
+	
 	protected static String OLDconfig()
 	{
 		return "plugins/TerrainClaim/terrains.yml";

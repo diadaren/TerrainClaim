@@ -1,0 +1,11 @@
+# Aliases, eg. if you set alias "abc" for "add", you can type /terrain abc nick 2, and it means /terrain add nick 2
+# Leave "" to disable.
+
+alias-add: ""
+alias-ranks: ""
+alias-remove: ""
+alias-list: ""
+alias-tp: ""
+alias-rename: ""
+alias-info: ""
+alias-block: ""

@@ -211,7 +211,12 @@ public class Functions {
 			Storage.getfile(cfg.OLDconfig()).delete();
 		}
 		
-		//TODO: Custom subcommands and aliases.
+		//TODO: Command claiming
+		//TODO: /tr settp - for command claimed terrains
+		//TODO: /tr list - colorize (by command in one color and by command block in second)
+		//TODO: Transfer subcommand
+		//TODO: Kick subcommand
+		//TODO: Claiming limits
 		//TODO: Change version.
 		//TODO: Tests
 	}
