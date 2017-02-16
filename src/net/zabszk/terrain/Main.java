@@ -139,10 +139,11 @@ public class Main extends JavaPlugin
 							if (tereny.get(i).split(";")[3].equalsIgnoreCase(search))
 							{
 								if (!found) sender.sendMessage(format("3", lang("list")));
+								String[] sp = tereny.get(i).split(";");
 								
-								if (args[5].equalsIgnoreCase("B")) sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.GREEN + " [BLOCK]");
-								else if (args[5].equalsIgnoreCase("C")) sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.AQUA + " [COMMAND]");
-								else sender.sendMessage(ChatColor.WHITE + "- " + tereny.get(i).split(";")[4] + ChatColor.LIGHT_PURPLE + " [OTHER]");
+								if (sp[5].equalsIgnoreCase("B")) sender.sendMessage(ChatColor.WHITE + "- " + sp[4] + ChatColor.GREEN + " [BLOCK]");
+								else if (sp[5].equalsIgnoreCase("C")) sender.sendMessage(ChatColor.WHITE + "- " + sp[4] + ChatColor.AQUA + " [COMMAND]");
+								else sender.sendMessage(ChatColor.WHITE + "- " + sp[4] + ChatColor.LIGHT_PURPLE + " [OTHER]");
 								
 								found = true;
 							}
@@ -272,7 +273,7 @@ public class Main extends JavaPlugin
 										
 										if (s[0].equalsIgnoreCase(ch.getWorld().getName()) && s[1].equalsIgnoreCase(Integer.toString(ch.getX()))  && s[2].equalsIgnoreCase(Integer.toString(ch.getZ())))
 										{
-											tereny.set(i, s[0] + ";" + s[1] + ";" + s[2] + ";" + s[3] + ";" + args[1].replace(";", ".").replace(":", "."));
+											tereny.set(i, s[0] + ";" + s[1] + ";" + s[2] + ";" + s[3] + ";" + args[1].replace(";", ".").replace(":", ".") + ";" + s[5]);
 											
 											sender.sendMessage(format("3", lang("rename-done")));
 											
@@ -451,16 +452,11 @@ public class Main extends JavaPlugin
 								
 								for (int i = 0; i < tereny.size(); i++)
 								{
-									if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()))
-									{
-										if (!found) sender.sendMessage(format("3", lang("list")));
-										
-										if (args[5].equalsIgnoreCase("C")) count++;
-									}
+									if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()) && tereny.get(i).split(";")[5].equalsIgnoreCase("C")) count++;
 								}
 								
 								if (count < config.getInt("CommandClaimsLimit") || config.getInt("CommandClaimsLimit") == -1) Functions.Claim(target, "C");
-								else sender.sendMessage(lang("claim-command-limit").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))));
+								else sender.sendMessage(format("3", lang("claim-command-limit").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit")))));
 							}
 						}
 						else sender.sendMessage(Main.format("4", Main.lang("claim-err-world")));
@@ -549,30 +545,34 @@ public class Main extends JavaPlugin
 					Chunk ch = l.getChunk();
 					
 					File tconf = new File("plugins/TerrainClaim/claims/" + ((Player) sender).getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-					FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-					
-					if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("settp.others", sender, false, true))
+					if (tconf.exists())
 					{
-						if (tconfig.getString("Method").equalsIgnoreCase("C"))
+						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+						
+						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("settp.others", sender, false, true))
 						{
-							tconfig.set("X", l.getBlockX());
-							tconfig.set("Y", l.getBlockY());
-							tconfig.set("Z", l.getBlockZ());
-							
-							try
+							if (tconfig.getString("Method").equalsIgnoreCase("C"))
 							{
-								tconfig.save(tconf);
+								tconfig.set("X", l.getBlockX());
+								tconfig.set("Y", l.getBlockY());
+								tconfig.set("Z", l.getBlockZ());
+								
+								try
+								{
+									tconfig.save(tconf);
+								}
+								catch (IOException ex)
+								{
+									System.out.println("[TerrainClaim] Config file saving error.");
+								}
+								
+								sender.sendMessage(Main.format("3", Main.lang("settp-done")));
 							}
-							catch (IOException ex)
-							{
-								System.out.println("[TerrainClaim] Config file saving error.");
-							}
-							
-							sender.sendMessage(Main.format("3", Main.lang("settp-done")));
+							else sender.sendMessage(Main.format("4", Main.lang("settp-command-only")));
 						}
-						else sender.sendMessage(Main.format("4", Main.lang("settp-command-only")));
+						else sender.sendMessage(Main.format("4", Main.lang("not-owner")));
 					}
-					else sender.sendMessage(Main.format("4", Main.lang("not-owner")));
+					else sender.sendMessage(Main.format("4", Main.lang("settp-not-claimed")));
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
 			}
@@ -652,7 +652,7 @@ public class Main extends JavaPlugin
 	
 	public static String format (String Color, String Msg)
 	{
-		return ChatColor.translateAlternateColorCodes('&', "&8&l[&" + Color + "&l" + Main.getInstance().config.getString("PluginDisplayName") + "&8&l] " + "&" + Color + "&l" + Msg);
+		return ChatColor.translateAlternateColorCodes('&', "&8&l[&" + Color + Main.getInstance().config.getString("PluginDisplayName") + "&8&l] " + "&" + Color + Msg);
 	}
 	
 	public static Main getInstance()
@@ -808,11 +808,15 @@ public class Main extends JavaPlugin
 		FileConfiguration file = Storage.get(cfg.aliases());
 		
 		if (file.getString("alias-add").equalsIgnoreCase(arg)) return "add";
+		if (file.getString("alias-ranks").equalsIgnoreCase(arg)) return "ranks";
 		else if (file.getString("alias-remove").equalsIgnoreCase(arg)) return "remove";
 		else if (file.getString("alias-list").equalsIgnoreCase(arg)) return "list";
 		else if (file.getString("alias-tp").equalsIgnoreCase(arg)) return "tp";
 		else if (file.getString("alias-rename").equalsIgnoreCase(arg)) return "rename";
 		else if (file.getString("alias-info").equalsIgnoreCase(arg)) return "info";
+		else if (file.getString("alias-claim").equalsIgnoreCase(arg)) return "claim";
+		else if (file.getString("alias-unclaim").equalsIgnoreCase(arg)) return "unclaim";
+		else if (file.getString("alias-settp").equalsIgnoreCase(arg)) return "settp";
 		else if (file.getString("alias-block").equalsIgnoreCase(arg)) return "block";
 		else return "";
 	}

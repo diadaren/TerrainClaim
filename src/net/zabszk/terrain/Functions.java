@@ -273,17 +273,40 @@ public class Functions {
 	{
 		if (Storage.getfile(cfg.OLDconfig()).exists())
 		{
+			System.out.println("[TerrainClaim] Updating config version...");
+			
 			YamlConfiguration file = Storage.get(cfg.OLDconfig());
 			YamlConfiguration c = Storage.get(cfg.config());
 			
 			List<String> tereny = file.getStringList("Terrains");
 			
+			System.out.println("[TerrainClaim] Updating claims...");
+			
 			for (int i = 0; i < tereny.size(); i++)
 			{
+				System.out.println("[TerrainClaim] Updating claims [" + (i + 1) + "/" + tereny.size() + "]");
+				
 				tereny.set(i, tereny.get(i) + ";B");
+				String[] sp = tereny.get(i).split(";");
+				
+				File tconf = new File("plugins/TerrainClaim/claims/" + sp[0] + "/" + sp[1] + "," + sp[2] + ".yml");
+				
+				System.out.println("[TerrainClaim] Updating claim " + sp[0] + "/" + sp[1] + "," + sp[2]);
+				
+				FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+				
+				tconfig.set("Method", "B");
+				
+				try {
+					tconfig.save(tconf);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			Storage.setclaims(tereny);
+			
+			System.out.println("[TerrainClaim] Claims updated and saved");
 			
 			Copy("PluginDisplayName", file, c);
 			Copy("Lang", file, c);
@@ -300,13 +323,12 @@ public class Functions {
 			
 			Storage.getfile(cfg.OLDconfig()).delete();
 			Storage.save(cfg.config(), c);
+			
+			System.out.println("[TerrainClaim] Config updated");
 		}
 		
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
-		//TODO: Change version
-		//TODO: Tests
-		//TODO: Change lang version
 	}
 	
 	private static void Copy(String value, YamlConfiguration old, YamlConfiguration n)
