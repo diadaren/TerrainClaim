@@ -14,6 +14,13 @@ public class Storage {
 		return YamlConfiguration.loadConfiguration(configfile);
 	}
 	
+	public static YamlConfiguration get(String name, Boolean create)
+	{
+		File configfile = new File(name);
+		if (!configfile.exists() && create) try { configfile.createNewFile(); } catch (Exception ex) {}
+		return YamlConfiguration.loadConfiguration(configfile);
+	}
+	
 	public static File getfile(String name)
 	{
 		return new File(name);

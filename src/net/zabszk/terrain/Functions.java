@@ -15,7 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Effect;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -219,7 +218,7 @@ public class Functions {
 			if (langconf.getInt("DO-NOT-CHANGE-lang-ver") != Main.LangVersion) langfile.delete();
 		}
 		
-		if (!langfile.exists()) Extract("resources/" + name + ".yml", "plugins/TerrainClaim/lang/ " + name + ".yml");
+		if (!langfile.exists()) Extract("resources/" + name + ".yml", "plugins/TerrainClaim/lang/" + name + ".yml");
 	}
 	
 	protected static void GenerateConfig(String name)
@@ -299,15 +298,15 @@ public class Functions {
 			Copy("Enable-Creeper", file, c);
 			Copy("AllowMetrics", file, c);
 			
-			Storage.save(cfg.config(), c);
-			
 			Storage.getfile(cfg.OLDconfig()).delete();
+			Storage.save(cfg.config(), c);
 		}
 		
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
 		//TODO: Change version
 		//TODO: Tests
+		//TODO: Change lang version
 	}
 	
 	private static void Copy(String value, YamlConfiguration old, YamlConfiguration n)

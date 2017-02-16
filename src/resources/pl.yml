@@ -60,3 +60,7 @@ claim-block-disabled: "Ta forma zajmowania terenu jest wylaczona przez administr
 claim-command-disabled: "Ta forma zajmowania terenu jest wylaczona przez administratora. Sprobuj uzyc bloku terenu."
 claim-command-limit: "Limit terenow zajetych przez komende zostal przekroczony. Obecny limit: %limit."
 claim-command-max: "Mozes zajac tylko &l%limit &3chunkow uzywajac &lKOMENDY&3."
+unclaim-not-claimed: "Ten teren nie jest zajety."
+unclaim-use-block: "Aby zdjac ocrhone tego terenu, kliknij na niego prawym przyciskiem myszy.."
+settp-command-only: "Tej komendy mozna uzyc tylko na terenach zajetych poleceniem."
+settp-done: "Miejsce teleportacji przeniesione."
