@@ -304,8 +304,6 @@ public class Functions {
 			Storage.getfile(cfg.OLDconfig()).delete();
 		}
 		
-		//TODO: Command claiming
-		//TODO: /tr settp - for command claimed terrains
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
 		//TODO: Change version

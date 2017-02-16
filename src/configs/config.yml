@@ -13,4 +13,5 @@ Enable-Creeper: false
 AllowBlockClaiming: true
 AllowCommandClaiming: false
 CommandClaimsLimit: -1
+ShowRequiredPermissions: true
 AllowMetrics: true

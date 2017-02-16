@@ -23,7 +23,10 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 
 public class Main extends JavaPlugin
@@ -89,8 +92,18 @@ public class Main extends JavaPlugin
 			sender.sendMessage(lang("claim-command-max").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))));
 			sender.sendMessage("");
 			
-			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("claim"));
-			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
+			if (config.getBoolean("AllowCommandClaiming"))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("claim"));
+				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
+				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("settp"));
+			}
+			else
+			{
+				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("claim"));
+				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("unclaim"));
+				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("settp"));
+			}
 			
 			sender.sendMessage("");
 			
@@ -458,6 +471,113 @@ public class Main extends JavaPlugin
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
 			}
+			else if (args[0].equalsIgnoreCase("unclaim"))
+			{
+				if (sender instanceof Player)
+				{
+					Location l = ((Player) sender).getLocation();
+					Chunk ch = l.getChunk();
+					
+					File tconf = new File("plugins/TerrainClaim/claims/" + ((Player) sender).getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+					if (tconf.exists())
+					{
+						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+						
+						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("unclaim.others", sender, false, true))
+						{
+							if (tconfig.getString("Method").equalsIgnoreCase("C"))
+							{
+								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+								
+								String del = "";
+								
+								for (String t : tereny)
+								{
+									String[] s = t.split(";");
+									
+									if (s[0].equalsIgnoreCase(((Player) sender).getWorld().getName()) && s[1].equals(Integer.toString(ch.getX())) && s[2].equals(Integer.toString(ch.getZ()))) del = t;
+								}
+								
+								if (!del.equals("")) tereny.remove(del);
+								
+								Storage.setclaims(tereny);
+								
+								tconf.delete();
+								
+								try
+								{
+									if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
+									{
+										((Player) sender).getWorld().playSound(l, Sound.ENTITY_GENERIC_EXPLODE, 1, 0);
+									}
+								}
+								catch (Exception ex)
+								{
+									ex.printStackTrace();
+									System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
+								}
+								
+								try
+								{
+									if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
+									{
+										for (int a = 0; a < 500; a++)
+										{
+											((Player) sender).getWorld().playEffect(l, Effect.EXPLOSION_HUGE, 5);
+										}
+									}
+								}
+								catch (Exception ex)
+								{
+									ex.printStackTrace();
+									System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
+								}
+								
+								sender.sendMessage(Main.format("b", Main.lang("claim-unclaimed")));
+							}
+							else sender.sendMessage(Main.format("4", Main.lang("unclaim-use-block")));
+						}
+						else sender.sendMessage(Main.format("4", Main.lang("not-owner")));
+					}
+					else sender.sendMessage(Main.format("4", Main.lang("unclaim-not-claimed")));
+				}
+				else sender.sendMessage(format("4", "This command can be executed only from game level."));
+			}
+			else if (args[0].equalsIgnoreCase("settp") && Perm("settp", sender, true, true))
+			{
+				if (sender instanceof Player)
+				{
+					Location l = ((Player) sender).getLocation();
+					Chunk ch = l.getChunk();
+					
+					File tconf = new File("plugins/TerrainClaim/claims/" + ((Player) sender).getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+					FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+					
+					if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("settp.others", sender, false, true))
+					{
+						if (tconfig.getString("Method").equalsIgnoreCase("C"))
+						{
+							tconfig.set("X", l.getBlockX());
+							tconfig.set("Y", l.getBlockY());
+							tconfig.set("Z", l.getBlockZ());
+							
+							try
+							{
+								tconfig.save(tconf);
+							}
+							catch (IOException ex)
+							{
+								System.out.println("[TerrainClaim] Config file saving error.");
+							}
+							
+							sender.sendMessage(Main.format("3", Main.lang("settp-done")));
+						}
+						else sender.sendMessage(Main.format("4", Main.lang("settp-command-only")));
+					}
+					else sender.sendMessage(Main.format("4", Main.lang("not-owner")));
+				}
+				else sender.sendMessage(format("4", "This command can be executed only from game level."));
+			}
 			else if (args[0].equalsIgnoreCase("block") && Perm("block", sender, false, true))
 			{
 				String target = null;
@@ -520,10 +640,13 @@ public class Main extends JavaPlugin
 		if (!result)
 		{
 			sender.sendMessage(format("4", "Access Denied!"));
-			sender.sendMessage(format("4", "You need one of following permissions:"));
-			sender.sendMessage(ChatColor.DARK_GRAY + "- terrain." + perm);
-			if (user) sender.sendMessage(ChatColor.DARK_GRAY + "- terrain.player");
-			if (admin) sender.sendMessage(ChatColor.DARK_GRAY + "- terrain.admin");
+			if (config.getBoolean("ShowRequiredPermissions"))
+			{
+				sender.sendMessage(format("4", "You need one of following permissions:"));
+				sender.sendMessage(ChatColor.DARK_GRAY + "- terrain." + perm);
+				if (user) sender.sendMessage(ChatColor.DARK_GRAY + "- terrain.player");
+				if (admin) sender.sendMessage(ChatColor.DARK_GRAY + "- terrain.admin");
+			}
 		}
 		
 		return result;

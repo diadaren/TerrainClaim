@@ -60,3 +60,7 @@ claim-block-disabled: "This method of claiming is disabled by administrator. Try
 claim-command-disabled: "This method of claiming is disabled by administrator. Try claiming using terrain block."
 claim-command-limit: "Limit of claims made by command exceeded. Current limit: %limit."
 claim-command-max: "You can claim only &l%limit &3chunks using &lCOMMAND&3."
+unclaim-not-claimed: "This chunk is not claimed."
+unclaim-use-block: "To unclaim chunk claimed by terrain block, right click on that block."
+settp-command-only: "This command can be used only to command-claimed chunks."
+settp-done: "Teleport point moved."
