@@ -40,7 +40,7 @@ public class Main extends JavaPlugin
 	private static File configfile;
 	protected static FileConfiguration config;
 	
-	public static final int LangVersion = 2;
+	public static final int LangVersion = 4;
 	
 	@Override
 	public void onEnable()
