@@ -229,7 +229,7 @@ public class Event  implements Listener
 											Location l = e.getClickedBlock().getLocation().add(0, 1, 0);
 											
 											tconfig.set("Name", e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
-											tconfig.set("Owner", e.getPlayer().getName());
+											tconfig.set("Owner", e.getPlayer().getUniqueId().toString());
 											tconfig.set("Allowed", new ArrayList<String>());
 											tconfig.set("world", e.getPlayer().getWorld().getName());
 											tconfig.set("X", l.getBlockX());
@@ -249,7 +249,7 @@ public class Event  implements Listener
 											
 											List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 											
-											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getName() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
+											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getUniqueId().toString() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
 											
 											Storage.setclaims(tereny);
 											
@@ -318,9 +318,9 @@ public class Event  implements Listener
 					
 					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z"))
 					{
-						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true))
 						{
-							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
+							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
 							{
 								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
 								
@@ -351,8 +351,6 @@ public class Event  implements Listener
 									e.getPlayer().updateInventory();
 								}
 								
-								//e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
-
 								try
 								{
 									if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))

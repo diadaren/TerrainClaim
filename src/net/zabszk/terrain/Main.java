@@ -74,9 +74,8 @@ public class Main extends JavaPlugin
 		{
 			Boolean admin = sender.hasPermission("terrain.admin");
 			
+			sender.sendMessage(ChatColor.GOLD + "=====================================================");
 			sender.sendMessage("");
-			sender.sendMessage("");
-			sender.sendMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "/terrain");
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("add") + " " + lang("help-nick") + " " + lang("help-rank") + " [-a]");
 			sender.sendMessage(ChatColor.GRAY + lang("help-ranks-help") + " /" + label + " " + GetAlias("ranks"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("remove") + " " + lang("help-nick") + " [-a]");
@@ -85,32 +84,27 @@ public class Main extends JavaPlugin
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("rename") + " " + lang("help-new-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
 			
-			sender.sendMessage("");
-			sender.sendMessage("");
-			sender.sendMessage(lang("claim-command-max").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))));
-			sender.sendMessage("");
-			
-			if (config.getBoolean("AllowCommandClaiming"))
-			{
+			if (config.getBoolean("AllowCommandClaiming")) {
+				sender.sendMessage("");
+				sender.sendMessage(lang("claim-command-max").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))).replace("-1", lang("help-unlimited")));
+				sender.sendMessage("");
+				
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("claim"));
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("settp"));
 			}
-			else
-			{
-				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("claim"));
-				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("unclaim"));
-				sender.sendMessage(ChatColor.GRAY + "/" + label + " " + GetAlias("settp"));
-			}
 			
-			sender.sendMessage("");
-			
+			if (admin) sender.sendMessage("");
 			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
 			if (admin || sender.hasPermission("terrain.block")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("block") + " " + lang("help-nick-optional") + " " + lang("help-amount-optional"));
 			if (admin || sender.hasPermission("terrain.list.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("list") + " " + lang("help-nick-optional"));
 			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("tp") + " " + lang("help-owner") + ":" + lang("help-nick"));
 			
 			sender.sendMessage("");
+			sender.sendMessage(ChatColor.DARK_GRAY + "Plugin created by ZABSZK, 2017");
+			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+			sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
+			sender.sendMessage(ChatColor.GOLD + "=====================================================");
 		}
 		else
 		{
@@ -126,8 +120,8 @@ public class Main extends JavaPlugin
 				{
 					String search = "";
 					
-					if (args.length > 1 && Perm("list.others", sender, false, true)) search = args[1];
-					else if (args.length == 1) search = sender.getName();
+					if (args.length > 1 && Perm("list.others", sender, false, true)) search = Functions.GetUUID(args[1]);
+					else if (args.length == 1) search = Functions.GetUUID(sender.getName());
 					
 					if (!search.equals(""))
 					{
@@ -173,7 +167,7 @@ public class Main extends JavaPlugin
 					if (args.length != 2) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("tp") + " " + lang("help-terrain-name")));
 					else
 					{
-						String player = sender.getName();
+						String player = ((Player) sender).getUniqueId().toString();
 						String search = "";
 						
 						if (args[1].contains(":") && Perm("tp.others", sender, false, true))
@@ -232,7 +226,7 @@ public class Main extends JavaPlugin
 					{
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
-						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.getInstance().Perm("rename.others", sender, false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || Main.getInstance().Perm("rename.others", sender, false, true))
 						{
 							String search = args[1].replace(";", ".").replace(":", ".");
 							String target = tconfig.getString("Owner");
@@ -316,7 +310,7 @@ public class Main extends JavaPlugin
 								
 								for (int i = 0; i < tereny.size(); i++)
 								{
-									if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()))
+									if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString()))
 									{
 										String[] split = tereny.get(i).split(";");
 										
@@ -355,7 +349,7 @@ public class Main extends JavaPlugin
 							
 							for (int i = 0; i < tereny.size(); i++)
 							{
-								if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()))
+								if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString()))
 								{
 									String[] split = tereny.get(i).split(";");
 									
@@ -392,7 +386,7 @@ public class Main extends JavaPlugin
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
 						sender.sendMessage(lang("info-about").replace("%claim", ch.getX() + "," + ch.getZ()));
-						sender.sendMessage(lang("info-owner").replace("%nick", tconfig.getString("Owner")));
+						sender.sendMessage(lang("info-owner").replace("%nick", Functions.GetNickname(tconfig.getString("Owner"))));
 						sender.sendMessage(lang("info-name").replace("%name", tconfig.getString("Name")));
 						
 						List<String> Allowed = (List<String>) tconfig.getList("Allowed");
@@ -406,7 +400,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(lang("info-admins").replace("%nick", disp));
+						sender.sendMessage(lang("info-admins").replace("%nick", Functions.GetNickname(disp)));
 						
 						disp = "";
 						
@@ -417,7 +411,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(lang("info-members").replace("%nick", disp));
+						sender.sendMessage(lang("info-members").replace("%nick", Functions.GetNickname(disp)));
 						
 						disp = "";
 						
@@ -428,7 +422,7 @@ public class Main extends JavaPlugin
 						
 						if (disp.length() > 0) disp = disp.substring(0, disp.length() - 2);
 						
-						sender.sendMessage(lang("info-helpers").replace("%nick", disp));
+						sender.sendMessage(lang("info-helpers").replace("%nick", Functions.GetNickname(disp)));
 					}
 				}
 				else sender.sendMessage(format("4", "This command can be executed only from game level."));
@@ -452,7 +446,7 @@ public class Main extends JavaPlugin
 								
 								for (int i = 0; i < tereny.size(); i++)
 								{
-									if (tereny.get(i).split(";")[3].equalsIgnoreCase(sender.getName()) && tereny.get(i).split(";")[5].equalsIgnoreCase("C")) count++;
+									if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString()) && tereny.get(i).split(";")[5].equalsIgnoreCase("C")) count++;
 								}
 								
 								if (count < config.getInt("CommandClaimsLimit") || config.getInt("CommandClaimsLimit") == -1) Functions.Claim(target, "C");
@@ -477,7 +471,7 @@ public class Main extends JavaPlugin
 					{
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
-						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("unclaim.others", sender, false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || Main.Perm("unclaim.others", sender, false, true))
 						{
 							if (tconfig.getString("Method").equalsIgnoreCase("C"))
 							{
@@ -549,7 +543,7 @@ public class Main extends JavaPlugin
 					{
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
-						if (tconfig.getString("Owner").equalsIgnoreCase(sender.getName()) || Main.Perm("settp.others", sender, false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || Main.Perm("settp.others", sender, false, true))
 						{
 							if (tconfig.getString("Method").equalsIgnoreCase("C"))
 							{
@@ -621,6 +615,43 @@ public class Main extends JavaPlugin
 			{
 				Reload();
 				sender.sendMessage(ChatColor.GREEN + "[TerrainClaim] Plugin reloaded.");
+			}
+			else if (args[0].equalsIgnoreCase("dev") && Perm("dev", sender, false, true))
+			{
+				sender.sendMessage(ChatColor.GOLD + "=====================================================");
+				sender.sendMessage(ChatColor.GREEN + "TerrainClaim Dev Information");
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.GREEN + "General");
+				sender.sendMessage(ChatColor.GRAY + "PluginDisplayName: " + config.getString("PluginDisplayName"));
+				sender.sendMessage(ChatColor.GRAY + "Lang: " + config.getString("Lang"));
+				sender.sendMessage(ChatColor.GRAY + "ShowRequiredPermissions: " + (config.getBoolean("ShowRequiredPermissions")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "AllowMetrics: " + (config.getBoolean("AllowMetrics")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.GREEN + "Claiming");
+				sender.sendMessage(ChatColor.GRAY + "Block claiming: " + (config.getBoolean("AllowBlockClaiming")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Command claiming: " + (config.getBoolean("AllowCommandClaiming")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Command chunk limit: " + Integer.toString(config.getInt("CommandClaimsLimit")));
+				sender.sendMessage(ChatColor.GRAY + "Check for worldguard regions: " + (config.getBoolean("CheckForWorldGuardRegions")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.GREEN + "Protection");
+				sender.sendMessage(ChatColor.GRAY + "Enable PvP: " + (config.getBoolean("Enable-PvP")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Added vs Nonadded: " + (config.getBoolean("AddedVsNonadded")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Enable PvE: " + (config.getBoolean("Enable-PvE")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Enable EvE: " + (config.getBoolean("Enable-EvE")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Enable Creeper: " + (config.getBoolean("Enable-Creeper")?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.GREEN + "Experimental");
+				sender.sendMessage(ChatColor.GRAY + "Sounds: " + ((Storage.get(cfg.experimental()).getBoolean("PlaySound"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Effects: " + ((Storage.get(cfg.experimental()).getBoolean("PlayEffect"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.GREEN + "Worlds");
+				sender.sendMessage(ChatColor.GRAY + "Blacklist: " + ((Storage.get(cfg.worlds()).getBoolean("UseBlacklist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage(ChatColor.GRAY + "Whitelist: " + ((Storage.get(cfg.worlds()).getBoolean("UseWhitelist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
+				sender.sendMessage("");
+				sender.sendMessage(ChatColor.DARK_GRAY + "Plugin created by ZABSZK, 2017");
+				sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+				sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
+				sender.sendMessage(ChatColor.GOLD + "=====================================================");
 			}
 			else sender.sendMessage(format("4", "Unknown subcommand. Type /terrain to get help."));
 		}
@@ -776,17 +807,17 @@ public class Main extends JavaPlugin
 			{
 				FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 				
-				if (tconfig.getString("Owner").equalsIgnoreCase(target.getName())) result = true;
+				if (tconfig.getString("Owner").equalsIgnoreCase(target.getUniqueId().toString())) result = true;
 				else if (target.hasPermission("terrain.admin") || target.hasPermission("terrain.bypass")) result = true;
 				else
 				{
-					List<String> members = (List<String>) tconfig.get("Allowed");
+					List<String> members = tconfig.getStringList("Allowed");
 					
 					for (int i = 0; i < members.size(); i++)
 					{
 						String[] member = members.get(i).split(",");
 						
-						if (member[0].equalsIgnoreCase(target.getName()))
+						if (member[0].equalsIgnoreCase(target.getUniqueId().toString()))
 						{
 							if (Integer.parseInt(member[1]) >= Level) result = true;
 						}

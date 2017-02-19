@@ -1,7 +1,7 @@
 name: TerrainClaim
 main: net.zabszk.terrain.Main
 description: Adds chunk claiming.
-version: 1.1.5
+version: 1.2
 author: zabszk
 softdepend: [WorldGuard]
 

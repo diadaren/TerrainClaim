@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -17,6 +18,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,6 +30,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class Functions {
 	public static void Add(File tconf, CommandSender sender, String target, String rnk)
 	{
+		target = GetUUID(target);
+		
 		FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 		
 		List<String> members = tconfig.getStringList("Allowed");
@@ -68,7 +72,7 @@ public class Functions {
 					System.out.println("[TerrainClaim] Config file saving error.");
 				}
 				
-				sender.sendMessage(Main.format("3", Main.lang("add-changed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+				sender.sendMessage(Main.format("3", Main.lang("add-changed").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
 			}
 		}
 		else
@@ -86,7 +90,7 @@ public class Functions {
 				System.out.println("[TerrainClaim] Config file saving error.");
 			}
 			
-			sender.sendMessage(Main.format("3", Main.lang("add-added").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			sender.sendMessage(Main.format("3", Main.lang("add-added").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
 		}
 	}
 	
@@ -103,7 +107,7 @@ public class Functions {
 			{
 				String[] member = members.get(i).split(",");
 				
-				if (member[0].equalsIgnoreCase(target)) id = i;
+				if (member[0].equalsIgnoreCase(GetUUID(target)) || member[0].equalsIgnoreCase(target)) id = i;
 			}
 		}
 		
@@ -149,7 +153,7 @@ public class Functions {
 			Location l = target.getLocation().add(0, 1, 0);
 			
 			tconfig.set("Name", target.getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
-			tconfig.set("Owner", target.getName());
+			tconfig.set("Owner", target.getUniqueId().toString());
 			tconfig.set("Allowed", new ArrayList<String>());
 			tconfig.set("world", target.getWorld().getName());
 			tconfig.set("X", l.getBlockX());
@@ -169,7 +173,7 @@ public class Functions {
 			
 			List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 			
-			tereny.add(target.getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + target.getName() + ";" + target.getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";" + type);
+			tereny.add(target.getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + target.getUniqueId().toString() + ";" + target.getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";" + type);
 			
 			Storage.setclaims(tereny);
 				
@@ -228,6 +232,7 @@ public class Functions {
 		if (!cfile.exists()) Extract("configs/" + name + ".yml", "plugins/TerrainClaim/" + name + ".yml");
 	}
 	
+	@SuppressWarnings("deprecation")
 	private static void Extract(String source, String target)
 	{
 		try 
@@ -334,5 +339,37 @@ public class Functions {
 	private static void Copy(String value, YamlConfiguration old, YamlConfiguration n)
 	{
 		n.set(value, old.get(value));
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static String GetUUID(String nick)
+	{
+		try {
+			OfflinePlayer p = Bukkit.getOfflinePlayer(nick);
+			return p.getUniqueId().toString();
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static String GetNickname(String uuid)
+	{
+		try {
+			return Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName();
+		}
+		catch (Exception e) {
+			return uuid;
+		}
+	}
+	
+	public static String GetNickname(UUID uuid)
+	{
+		try {
+			return Bukkit.getOfflinePlayer(uuid).getName();
+		}
+		catch (Exception e) {
+			return uuid.toString();
+		}
 	}
 }
