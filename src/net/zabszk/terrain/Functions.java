@@ -131,6 +131,7 @@ public class Functions {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	protected static void Claim(Player target, String type)
 	{
 		Chunk ch = target.getLocation().getChunk();
@@ -242,6 +243,7 @@ public class Functions {
 			InputStream inputStream = file.getInputStream(entry);
 			
 			Files.copy(inputStream, Paths.get(target));
+			file.close();
 		}
 		catch (Exception e)
 		{
@@ -330,6 +332,47 @@ public class Functions {
 			Storage.save(cfg.config(), c);
 			
 			System.out.println("[TerrainClaim] Config updated");
+		}
+		
+		FileConfiguration claim = Storage.get(cfg.claims());
+		List<String> claims = claim.getStringList("Terrains");
+		
+		if (claims.size() > 0) {
+			if (!claims.get(0).split(";")[3].contains("-")) {
+				System.out.println("[TerrainClaim] Converting nicknames into UUIDs...");
+				for (int i = 0; i < claims.size(); i++) {
+					if (!claims.get(i).split(";")[3].contains("-")) {
+						System.out.println("[TerrainClaim] Converting nicknames of claim [" + (i + 1) + "/" + claims.size() + "]");
+						String[] c = claims.get(i).split(";");
+						claims.set(i, c[0] + ";" + c[1] + ";" + c[2] + ";" + GetUUID(c[3]) + ";" + c[4] + c[5]);
+						
+						FileConfiguration conf = YamlConfiguration.loadConfiguration(new File("plugins/TerrainClaim/claims/" + c[0] + "/" + c[1] + "," + c[2] + ".yml"));
+						conf.set("Owner", GetUUID(conf.getString("Owner")));
+						
+						if (conf.getStringList("Allowed").size() > 0) {
+							List<String> allowed = conf.getStringList("Allowed");
+							
+							for (int j = 0; j < allowed.size(); j++) {
+								allowed.set(j, GetUUID(allowed.get(i).split(",")[0]) + "," + allowed.get(i).split(",")[1]);
+							}
+							
+							conf.set("Allowed", allowed);
+						}
+						
+						try {
+							conf.save(new File("plugins/TerrainClaim/claims/" + c[0] + "/" + c[1] + "," + c[2] + ".yml"));
+						} catch (IOException e) {
+							System.out.println("[TerrainClaim] Can't save file: plugins/TerrainClaim/claims/" + c[0] + "/" + c[1] + "," + c[2] + ".yml");
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				System.out.println("[TerrainClaim] Nicknames converted, saving claims list...");
+				Storage.setclaims(claims);
+				System.out.println("[TerrainClaim] List saved.");
+				System.out.println("[TerrainClaim] All nicknames converted into UUIDs.");
+			}
 		}
 		
 		//TODO: Transfer subcommand

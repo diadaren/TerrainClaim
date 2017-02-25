@@ -67,6 +67,7 @@ public class Main extends JavaPlugin
 		System.out.println("[TerrainClaim] Plugin enabled!");
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
 	{
@@ -226,7 +227,7 @@ public class Main extends JavaPlugin
 					{
 						FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 						
-						if (tconfig.getString("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || Main.getInstance().Perm("rename.others", sender, false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(((Player) sender).getUniqueId().toString()) || Perm("rename.others", sender, false, true))
 						{
 							String search = args[1].replace(";", ".").replace(":", ".");
 							String target = tconfig.getString("Owner");
@@ -389,7 +390,7 @@ public class Main extends JavaPlugin
 						sender.sendMessage(lang("info-owner").replace("%nick", Functions.GetNickname(tconfig.getString("Owner"))));
 						sender.sendMessage(lang("info-name").replace("%name", tconfig.getString("Name")));
 						
-						List<String> Allowed = (List<String>) tconfig.getList("Allowed");
+						List<String> Allowed = tconfig.getStringList("Allowed");
 						
 						String disp = "";
 						
@@ -442,7 +443,6 @@ public class Main extends JavaPlugin
 								int count = 0;
 								
 								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-								Boolean found = false;
 								
 								for (int i = 0; i < tereny.size(); i++)
 								{
@@ -683,7 +683,7 @@ public class Main extends JavaPlugin
 	
 	public static String format (String Color, String Msg)
 	{
-		return ChatColor.translateAlternateColorCodes('&', "&8&l[&" + Color + Main.getInstance().config.getString("PluginDisplayName") + "&8&l] " + "&" + Color + Msg);
+		return ChatColor.translateAlternateColorCodes('&', "&8&l[&" + Color + config.getString("PluginDisplayName") + "&8&l] " + "&" + Color + Msg);
 	}
 	
 	public static Main getInstance()
@@ -691,6 +691,7 @@ public class Main extends JavaPlugin
         return instance;
     }
 	
+	@SuppressWarnings("unchecked")
 	public Player[] getOnline()
     {
         try

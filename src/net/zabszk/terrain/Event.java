@@ -147,8 +147,6 @@ public class Event  implements Listener
 		
 		if (tconf.exists())
 		{
-			Main mn = Main.getInstance();
-			
 		    if (e.getDamager() instanceof Player)
 		    {
 		    	if (e.getEntity() instanceof Player)
@@ -181,6 +179,7 @@ public class Event  implements Listener
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onInteract (PlayerInteractEvent e)
 	{
