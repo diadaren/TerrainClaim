@@ -7,7 +7,10 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -27,7 +30,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import mkremins.fanciful.FancyMessage;
+
 public class Functions {
+	
+	public static Map<String, String> uuid = new HashMap<String, String>();
+	
 	public static void Add(File tconf, CommandSender sender, String target, String rnk)
 	{
 		target = GetUUID(target);
@@ -344,7 +352,7 @@ public class Functions {
 					if (!claims.get(i).split(";")[3].contains("-")) {
 						System.out.println("[TerrainClaim] Converting nicknames of claim [" + (i + 1) + "/" + claims.size() + "]");
 						String[] c = claims.get(i).split(";");
-						claims.set(i, c[0] + ";" + c[1] + ";" + c[2] + ";" + GetUUID(c[3]) + ";" + c[4] + c[5]);
+						claims.set(i, c[0] + ";" + c[1] + ";" + c[2] + ";" + GetUUID(c[3]) + ";" + c[4] +";" + c[5]);
 						
 						FileConfiguration conf = YamlConfiguration.loadConfiguration(new File("plugins/TerrainClaim/claims/" + c[0] + "/" + c[1] + "," + c[2] + ".yml"));
 						conf.set("Owner", GetUUID(conf.getString("Owner")));
@@ -353,7 +361,7 @@ public class Functions {
 							List<String> allowed = conf.getStringList("Allowed");
 							
 							for (int j = 0; j < allowed.size(); j++) {
-								allowed.set(j, GetUUID(allowed.get(i).split(",")[0]) + "," + allowed.get(i).split(",")[1]);
+								allowed.set(j, GetUUID(allowed.get(j).split(",")[0]) + "," + allowed.get(j).split(",")[1]);
 							}
 							
 							conf.set("Allowed", allowed);
@@ -384,11 +392,95 @@ public class Functions {
 		n.set(value, old.get(value));
 	}
 	
+	public static void FormatListMessage(CommandSender target, String name, String type)
+	{
+		new FancyMessage(ChatColor.GRAY + "- ")
+        .then(name + " " + ChatColor.translateAlternateColorCodes('&', type))
+        .command("/tr tp " + name)
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("list-tooltip")))
+        .send(target);
+	}
+	
+	public static void SendManageMessage(CommandSender target, String nick)
+	{
+		nick = GetNickname(nick);
+		
+		new FancyMessage(ChatColor.AQUA + "- ")
+	     .then(nick)
+	     .command("/tr manage " + nick)
+	     .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-tooltip")))
+	     .send((Player) target);
+	}
+	
+	public static void FormatManageMessage(CommandSender target, String nick, Boolean chunkOwner)
+	{
+		target.sendMessage(Main.lang("info-clicked"));
+		
+		new FancyMessage("")
+        .then(Main.lang("info-menu-remove"))
+        .command("/tr remove " + nick)
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+        .send(target);
+		
+		if (chunkOwner) {
+			new FancyMessage("")
+	        .then(Main.lang("info-menu-remove-all"))
+	        .command("/tr remove " + nick + " -a")
+	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+	        .send(target);
+		}
+		
+		target.sendMessage("");
+		
+		new FancyMessage("")
+        .then(Main.lang("info-menu-helper"))
+        .command("/tr add " + nick + " 0")
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+        .send(target);
+		
+		if (chunkOwner) {
+			new FancyMessage("")
+	        .then(Main.lang("info-menu-helper-all"))
+	        .command("/tr add " + nick + " 0 -a")
+	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+	        .send(target);
+		}
+		
+		new FancyMessage("")
+        .then(Main.lang("info-menu-member"))
+        .command("/tr add " + nick + " 1")
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+        .send(target);
+		
+		if (chunkOwner) {
+			new FancyMessage("")
+	        .then(Main.lang("info-menu-member-all"))
+	        .command("/tr add " + nick + " 1 -a")
+	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+	        .send(target);
+		}
+		
+		new FancyMessage("")
+        .then(Main.lang("info-menu-admin"))
+        .command("/tr add " + nick + " 2")
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+        .send(target);
+		
+		if (chunkOwner) {
+			new FancyMessage("")
+	        .then(Main.lang("info-menu-admin-all"))
+	        .command("/tr add " + nick + " 2 -a")
+	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+	        .send(target);
+		}
+	}
+	
 	@SuppressWarnings("deprecation")
 	public static String GetUUID(String nick)
 	{
 		try {
 			OfflinePlayer p = Bukkit.getOfflinePlayer(nick);
+			CacheUUID(p.getUniqueId().toString(), nick);
 			return p.getUniqueId().toString();
 		}
 		catch (Exception e) {
@@ -399,20 +491,77 @@ public class Functions {
 	public static String GetNickname(String uuid)
 	{
 		try {
-			return Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName();
+			String nickname = Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName();
+			if (nickname == null) nickname = QueryCache(uuid);
+			if (nickname == null) return uuid;
+			else return nickname;
 		}
 		catch (Exception e) {
 			return uuid;
 		}
+		
 	}
 	
 	public static String GetNickname(UUID uuid)
 	{
 		try {
-			return Bukkit.getOfflinePlayer(uuid).getName();
+			String nickname = Bukkit.getOfflinePlayer(uuid).getName();
+			if (nickname == null) nickname = QueryCache(uuid.toString());
+			if (nickname == null) return uuid.toString();
+			else return nickname;
 		}
 		catch (Exception e) {
 			return uuid.toString();
 		}
+	}
+	
+	public static void LoadCache()
+	{
+		if (!Storage.getfile(cfg.UUID()).exists()) {
+			try {
+				Storage.getfile(cfg.UUID()).createNewFile();
+			} catch (Exception ex) {}
+		}
+		
+		FileConfiguration c = Storage.get(cfg.UUID());
+		
+		for(String str : c.getKeys(true)) {
+			uuid.put(str, c.getString(str));
+		}
+	}
+	
+	public static void SaveCache()
+	{
+		YamlConfiguration c = Storage.get(cfg.UUID());
+		
+		for(Entry<String, String> ui : uuid.entrySet()) {
+			c.set(ui.getKey(), ui.getValue());
+		}
+		
+		Storage.save(cfg.UUID(), c);
+		
+		System.out.println("[TerrainClaim] UUID cache saved.");
+	}
+	
+	public static String QueryCache(String UUID)
+	{
+		if (uuid.containsKey(UUID)) return uuid.get(UUID);
+		else return null;
+	}
+	
+	protected static void UpdateCacheFile(String UUID, String nickname) {
+		YamlConfiguration c = Storage.get(cfg.UUID());
+		c.set(UUID, nickname);
+		Storage.save(cfg.UUID(), c);
+	}
+	
+	public static void CacheUUID(String UUID, String nickname)
+	{		
+		if (uuid.containsKey(UUID)) {
+			if (!uuid.get(UUID).equalsIgnoreCase(nickname)) uuid.replace(UUID, nickname);
+		}
+		else uuid.put(UUID, nickname);
+		
+		UpdateCacheFile(UUID, nickname);
 	}
 }

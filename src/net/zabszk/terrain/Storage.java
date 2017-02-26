@@ -3,6 +3,7 @@ package net.zabszk.terrain;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -30,6 +31,13 @@ public class Storage {
 		YamlConfiguration f = get(cfg.claims());
 		f.set("Terrains", claims);
 		save(cfg.claims(), f);
+	}
+	
+	public static void savecache(Map<String, String> cache)
+	{
+		YamlConfiguration f = get(cfg.UUID());
+		f.set("cache", cache);
+		save(cfg.UUID(), f);
 	}
 	
 	public static void save(String name, YamlConfiguration cfg)

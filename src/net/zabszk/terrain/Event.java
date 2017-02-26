@@ -29,12 +29,19 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class Event  implements Listener
 {
+	@EventHandler (priority = EventPriority.LOW)
+	public void onJoin (PlayerJoinEvent e)
+	{
+		Functions.CacheUUID(e.getPlayer().getUniqueId().toString(), e.getPlayer().getName());
+	}
+	
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e)
 	{	
@@ -128,12 +135,12 @@ public class Event  implements Listener
 				if (toc.exists() && fromc.exists())
 				{
 					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")))
-						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", from.getString("Owner")).replace("%nickw", to.getString("Owner"))));
+						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", Functions.GetNickname(from.getString("Owner"))).replace("%nickw", Functions.GetNickname(to.getString("Owner")))));
 				}
 				else
 				{
-					if (fromc.exists()) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", from.getString("Owner"))));
-					else e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", to.getString("Owner"))));
+					if (fromc.exists()) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", Functions.GetNickname(from.getString("Owner")))));
+					else e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", Functions.GetNickname(to.getString("Owner")))));
 				}
 			}
 		}
