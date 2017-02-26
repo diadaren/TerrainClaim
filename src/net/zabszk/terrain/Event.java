@@ -29,12 +29,19 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class Event  implements Listener
 {
+	@EventHandler (priority = EventPriority.LOW)
+	public void onJoin (PlayerJoinEvent e)
+	{
+		Functions.CacheUUID(e.getPlayer().getUniqueId().toString(), e.getPlayer().getName());
+	}
+	
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e)
 	{	
@@ -128,12 +135,12 @@ public class Event  implements Listener
 				if (toc.exists() && fromc.exists())
 				{
 					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")))
-						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", from.getString("Owner")).replace("%nickw", to.getString("Owner"))));
+						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", Functions.GetNickname(from.getString("Owner"))).replace("%nickw", Functions.GetNickname(to.getString("Owner")))));
 				}
 				else
 				{
-					if (fromc.exists()) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", from.getString("Owner"))));
-					else e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", to.getString("Owner"))));
+					if (fromc.exists()) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", Functions.GetNickname(from.getString("Owner")))));
+					else e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", Functions.GetNickname(to.getString("Owner")))));
 				}
 			}
 		}
@@ -147,8 +154,6 @@ public class Event  implements Listener
 		
 		if (tconf.exists())
 		{
-			Main mn = Main.getInstance();
-			
 		    if (e.getDamager() instanceof Player)
 		    {
 		    	if (e.getEntity() instanceof Player)
@@ -181,6 +186,7 @@ public class Event  implements Listener
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onInteract (PlayerInteractEvent e)
 	{
@@ -229,7 +235,7 @@ public class Event  implements Listener
 											Location l = e.getClickedBlock().getLocation().add(0, 1, 0);
 											
 											tconfig.set("Name", e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
-											tconfig.set("Owner", e.getPlayer().getName());
+											tconfig.set("Owner", e.getPlayer().getUniqueId().toString());
 											tconfig.set("Allowed", new ArrayList<String>());
 											tconfig.set("world", e.getPlayer().getWorld().getName());
 											tconfig.set("X", l.getBlockX());
@@ -249,7 +255,7 @@ public class Event  implements Listener
 											
 											List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 											
-											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getName() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
+											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getUniqueId().toString() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
 											
 											Storage.setclaims(tereny);
 											
@@ -318,9 +324,9 @@ public class Event  implements Listener
 					
 					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z"))
 					{
-						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true))
+						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true))
 						{
-							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
+							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
 							{
 								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
 								
@@ -351,8 +357,6 @@ public class Event  implements Listener
 									e.getPlayer().updateInventory();
 								}
 								
-								//e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
-
 								try
 								{
 									if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
