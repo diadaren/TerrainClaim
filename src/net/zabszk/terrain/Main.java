@@ -65,6 +65,10 @@ public class Main extends JavaPlugin
 		}
 		
 		System.out.println("[TerrainClaim] Plugin enabled!");
+		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+		System.out.println("Copyright by ZABSZK, 2017");
+		System.out.println("Licensed on Mozilla Public License 2.0");
+		
 	}
 	
 	@Override
@@ -141,9 +145,9 @@ public class Main extends JavaPlugin
 								if (!found) sender.sendMessage(format("3", lang("list")));
 								String[] sp = tereny.get(i).split(";");
 								
-								if (sp[5].equalsIgnoreCase("B")) Functions.FormatListMessage(sender, sp[4], lang("list-block"));
-								else if (sp[5].equalsIgnoreCase("C")) Functions.FormatListMessage(sender, sp[4], lang("list-command"));
-								else Functions.FormatListMessage(sender, sp[4], lang("list-other"));
+								if (sp[5].equalsIgnoreCase("B")) Functions.FormatListMessage(sender, sp[4], lang("list-block"), search);
+								else if (sp[5].equalsIgnoreCase("C")) Functions.FormatListMessage(sender, sp[4], lang("list-command"), search);
+								else Functions.FormatListMessage(sender, sp[4], lang("list-other"), search);
 								
 								found = true;
 							}

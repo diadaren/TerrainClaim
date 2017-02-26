@@ -392,11 +392,14 @@ public class Functions {
 		n.set(value, old.get(value));
 	}
 	
-	public static void FormatListMessage(CommandSender target, String name, String type)
+	public static void FormatListMessage(CommandSender target, String name, String type, String owner)
 	{
+		String pref = "";
+		if (!((Player) target).getUniqueId().toString().equalsIgnoreCase(owner)) pref = owner + ":";
+		
 		new FancyMessage(ChatColor.GRAY + "- ")
         .then(name + " " + ChatColor.translateAlternateColorCodes('&', type))
-        .command("/tr tp " + name)
+        .command("/tr tp " + pref + name)
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("list-tooltip")))
         .send(target);
 	}
