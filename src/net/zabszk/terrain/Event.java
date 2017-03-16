@@ -44,8 +44,8 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e)
-	{	
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1))
+	{
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Main.config.getList("AnyoneCanPlace").contains(e.getBlock().getTypeId()))
 		{
 			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			
@@ -55,8 +55,8 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onBreak (BlockBreakEvent e)
-	{	
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1))
+	{
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Main.config.getList("AnyoneCanBreak").contains(e.getBlock().getTypeId()))
 		{
 			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			
@@ -170,7 +170,7 @@ public class Event  implements Listener
 		    	}
 		    	else
 		    	{
-		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1))
+		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1) && !Main.config.getBoolean("AnyoneCanAttackMobs"))
 			    	{
 			    		((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 						
@@ -401,19 +401,22 @@ public class Event  implements Listener
 		
 		try
 		{
-			if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0))
+			if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_AIR || !Main.config.getList("AnyoneCanUse").contains(e.getClickedBlock().getTypeId()) && e.getClickedBlock().getType().isSolid())
 			{
-				e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-				
-				e.setCancelled(true);
-			}
-			else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
-			{
-				if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0))
+				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0))
 				{
 					e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 					
 					e.setCancelled(true);
+				}
+				else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
+				{
+					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0))
+					{
+						e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
+						
+						e.setCancelled(true);
+					}
 				}
 			}
 		}

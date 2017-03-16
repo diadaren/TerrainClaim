@@ -66,8 +66,8 @@ public class Main extends JavaPlugin
 		
 		System.out.println("[TerrainClaim] Plugin enabled!");
 		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
-		System.out.println("Copyright by ZABSZK, 2017");
-		System.out.println("Licensed on Mozilla Public License 2.0");
+		System.out.println("[TerrainClaim] Copyright by ZABSZK, 2017");
+		System.out.println("[TerrainClaim] Licensed on Mozilla Public License 2.0");
 		
 	}
 	
@@ -784,6 +784,7 @@ public class Main extends JavaPlugin
 		Functions.GenerateLang("en"); //Translation made by: zabszk (https://dev.bukkit.org/members/zabszk)
 		Functions.GenerateLang("pl"); //Translation made by: zabszk (https://dev.bukkit.org/members/zabszk)
 		Functions.GenerateLang("fr"); //Translation made by: Alphayt (https://dev.bukkit.org/members/Alphayt)
+		Functions.GenerateLang("it"); //Translation made by: Parozzz (https://dev.bukkit.org/members/Parozzz)
 		
 		Functions.MigrateConfig();
 		
@@ -860,7 +861,7 @@ public class Main extends JavaPlugin
 		FileConfiguration file = Storage.get(cfg.aliases());
 		
 		if (file.getString("alias-add").equalsIgnoreCase(arg)) return "add";
-		if (file.getString("alias-ranks").equalsIgnoreCase(arg)) return "ranks";
+		else if (file.getString("alias-ranks").equalsIgnoreCase(arg)) return "ranks";
 		else if (file.getString("alias-remove").equalsIgnoreCase(arg)) return "remove";
 		else if (file.getString("alias-list").equalsIgnoreCase(arg)) return "list";
 		else if (file.getString("alias-tp").equalsIgnoreCase(arg)) return "tp";

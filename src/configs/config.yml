@@ -15,3 +15,7 @@ AllowCommandClaiming: false
 CommandClaimsLimit: -1
 ShowRequiredPermissions: true
 AllowMetrics: true
+AnyoneCanAttackMobs: false
+AnyoneCanPlace: []
+AnyoneCanBreak: []
+AnyoneCanUse: []
