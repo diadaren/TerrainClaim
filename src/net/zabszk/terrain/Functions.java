@@ -388,7 +388,7 @@ public class Functions {
 		conf.addDefault("AnyoneCanAttackMobs", false);
 		conf.addDefault("AnyoneCanPlace", new ArrayList<String>());
 		conf.addDefault("AnyoneCanBreak", new ArrayList<String>());
-		conf.addDefault("AnyoneCanUse", new ArrayList<String>());
+		//conf.addDefault("AnyoneCanUse", new ArrayList<String>());
 		
 		conf.options().copyDefaults(true);
 		Storage.save(cfg.config(), conf);
