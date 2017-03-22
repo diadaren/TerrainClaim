@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -42,6 +44,8 @@ public class Main extends JavaPlugin
 	
 	public static final int LangVersion = 5;
 	
+	public static Set<String> CommandBlacklist;
+	
 	@Override
 	public void onEnable()
 	{
@@ -65,7 +69,7 @@ public class Main extends JavaPlugin
 		}
 		
 		System.out.println("[TerrainClaim] Plugin enabled!");
-		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion() + " on " + Bukkit.getBukkitVersion());
 		System.out.println("[TerrainClaim] Copyright by ZABSZK, 2017");
 		System.out.println("[TerrainClaim] Licensed on Mozilla Public License 2.0");
 		
@@ -111,7 +115,7 @@ public class Main extends JavaPlugin
 			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("tp") + " " + lang("help-owner") + ":" + lang("help-nick"));
 			
 			sender.sendMessage("");
-			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion()  + " on " + Bukkit.getBukkitVersion());
 			sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 			sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 			sender.sendMessage(ChatColor.GOLD + "=====================================================");
@@ -667,7 +671,7 @@ public class Main extends JavaPlugin
 				sender.sendMessage(ChatColor.GRAY + "Blacklist: " + ((Storage.get(cfg.worlds()).getBoolean("UseBlacklist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
 				sender.sendMessage(ChatColor.GRAY + "Whitelist: " + ((Storage.get(cfg.worlds()).getBoolean("UseWhitelist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
 				sender.sendMessage("");
-				sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion());
+				sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion()  + " on " + Bukkit.getBukkitVersion());
 				sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 				sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 				sender.sendMessage(ChatColor.GOLD + "=====================================================");
@@ -765,10 +769,12 @@ public class Main extends JavaPlugin
 		Functions.GenerateConfig("worlds");
 		Functions.GenerateConfig("claims");
 		Functions.GenerateConfig("aliases");
+		Functions.GenerateConfig("protection");
 		Functions.GenerateConfig("experimental");
 		
 		Functions.MigrateConfig();
 		Functions.LoadCache();
+		Functions.ReloadCommandBlacklist();
 		
 		File path = new File("plugins/TerrainClaim/lang/");
 		

@@ -7,7 +7,9 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -386,9 +388,11 @@ public class Functions {
 		YamlConfiguration conf = Storage.get(cfg.config());
 		
 		conf.addDefault("AnyoneCanAttackMobs", false);
-		conf.addDefault("AnyoneCanPlace", new ArrayList<String>());
-		conf.addDefault("AnyoneCanBreak", new ArrayList<String>());
-		//conf.addDefault("AnyoneCanUse", new ArrayList<String>());
+		conf.addDefault("SuppressDenyMessages", false);
+		conf.addDefault("SuppressCommandDenyMessages", false);
+		conf.addDefault("SuppressEnterMessages", false);
+		conf.addDefault("SuppressLeaveMessages", false);
+		conf.addDefault("SuppressEnterLeaveMessages", false);
 		
 		conf.options().copyDefaults(true);
 		Storage.save(cfg.config(), conf);
@@ -576,5 +580,22 @@ public class Functions {
 		else uuid.put(UUID, nickname);
 		
 		UpdateCacheFile(UUID, nickname);
+	}
+	
+	public static void ReloadCommandBlacklist()
+	{
+		Main.CommandBlacklist = new HashSet<String>();
+		
+		List<String> ls = Storage.get(cfg.protection()).getStringList("CommandBlacklist");
+		
+		Main.CommandBlacklist.addAll(ls);
+		
+		if (Storage.get(cfg.protection()).getBoolean("CommandBlacklistSearchForAliases"))
+		{
+			for (String s : ls)
+			{
+				if (Bukkit.getCommandAliases().containsKey(s)) Main.CommandBlacklist.addAll(Arrays.asList(Bukkit.getCommandAliases().get(s)));
+			}
+		}
 	}
 }
