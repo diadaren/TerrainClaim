@@ -97,6 +97,7 @@ public class Main extends JavaPlugin
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("tp") + " " + lang("help-terrain-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("rename") + " " + lang("help-new-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("manage") + " " + lang("help-nick"));
 			
 			if (config.getBoolean("AllowCommandClaiming")) {
 				sender.sendMessage("");
@@ -110,12 +111,13 @@ public class Main extends JavaPlugin
 			
 			if (admin) sender.sendMessage("");
 			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
+			if (admin || sender.hasPermission("terrain.dev")) sender.sendMessage(ChatColor.GOLD + "/" + label + " " + GetAlias("dev") + " " + lang("help-nick-optional"));
 			if (admin || sender.hasPermission("terrain.block")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("block") + " " + lang("help-nick-optional") + " " + lang("help-amount-optional"));
 			if (admin || sender.hasPermission("terrain.list.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("list") + " " + lang("help-nick-optional"));
 			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("tp") + " " + lang("help-owner") + ":" + lang("help-nick"));
 			
 			sender.sendMessage("");
-			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion()  + " on " + Bukkit.getBukkitVersion());
+			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + ColorizeVersionName(Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion(), ChatColor.DARK_GRAY)  + " on " + Bukkit.getBukkitVersion());
 			sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 			sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 			sender.sendMessage(ChatColor.GOLD + "=====================================================");
@@ -671,7 +673,7 @@ public class Main extends JavaPlugin
 				sender.sendMessage(ChatColor.GRAY + "Blacklist: " + ((Storage.get(cfg.worlds()).getBoolean("UseBlacklist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
 				sender.sendMessage(ChatColor.GRAY + "Whitelist: " + ((Storage.get(cfg.worlds()).getBoolean("UseWhitelist"))?(ChatColor.GREEN + "YES"):(ChatColor.RED + "NO")));
 				sender.sendMessage("");
-				sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion()  + " on " + Bukkit.getBukkitVersion());
+				sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + ColorizeVersionName(Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion(), ChatColor.DARK_GRAY)  + " on " + Bukkit.getBukkitVersion());
 				sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 				sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 				sender.sendMessage(ChatColor.GOLD + "=====================================================");
@@ -877,6 +879,8 @@ public class Main extends JavaPlugin
 		else if (file.getString("alias-unclaim").equalsIgnoreCase(arg)) return "unclaim";
 		else if (file.getString("alias-settp").equalsIgnoreCase(arg)) return "settp";
 		else if (file.getString("alias-block").equalsIgnoreCase(arg)) return "block";
+		else if (file.getString("alias-manage").equalsIgnoreCase(arg)) return "manage";
+		else if (file.getString("alias-dev").equalsIgnoreCase(arg)) return "dev";
 		else return "";
 	}
 	
@@ -885,6 +889,15 @@ public class Main extends JavaPlugin
 		String text = Storage.get(cfg.aliases()).getString("alias-" + subcommand);
 		if (text.length() > 0) return text;
 		else return subcommand;
+	}
+	
+	static String ColorizeVersionName(String version, ChatColor color)
+	{
+		version = version.replace("ALPHA", ChatColor.RED + "ALPHA" + color);
+		version = version.replace("BETA", ChatColor.AQUA + "BETA" + color);
+		version = version.replace("DEV", ChatColor.GREEN + "DEV" + color);
+		
+		return version;
 	}
 	
 	public static boolean CheckWorld(World world)

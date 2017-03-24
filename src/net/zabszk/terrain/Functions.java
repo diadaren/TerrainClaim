@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -397,6 +398,16 @@ public class Functions {
 		conf.options().copyDefaults(true);
 		Storage.save(cfg.config(), conf);
 		
+		if (!Storage.get(cfg.aliases()).getKeys(false).contains("alias-manage"))
+		{
+			try {
+			    Files.write(Paths.get(cfg.aliases()), "alias-manage: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    Files.write(Paths.get(cfg.aliases()), "alias-dev: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			}catch (IOException e) {
+			    System.out.println("[TerrainClaim] Can't append alias file!");
+			}
+		}
+		
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
 	}
@@ -589,13 +600,5 @@ public class Functions {
 		List<String> ls = Storage.get(cfg.protection()).getStringList("CommandBlacklist");
 		
 		Main.CommandBlacklist.addAll(ls);
-		
-		if (Storage.get(cfg.protection()).getBoolean("CommandBlacklistSearchForAliases"))
-		{
-			for (String s : ls)
-			{
-				if (Bukkit.getCommandAliases().containsKey(s)) Main.CommandBlacklist.addAll(Arrays.asList(Bukkit.getCommandAliases().get(s)));
-			}
-		}
 	}
 }
