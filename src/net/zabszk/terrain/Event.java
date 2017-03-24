@@ -28,6 +28,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -42,24 +43,24 @@ public class Event  implements Listener
 		Functions.CacheUUID(e.getPlayer().getUniqueId().toString(), e.getPlayer().getName());
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e)
-	{	
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1))
+	{
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId()))
 		{
-			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-			
+			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onBreak (BlockBreakEvent e)
-	{	
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1))
+	{
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId()))
 		{
-			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-			
+			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 		else
@@ -87,6 +88,22 @@ public class Event  implements Listener
 	}
 	
 	@EventHandler (priority = EventPriority.HIGH)
+	public void onCommandPreprocess (PlayerCommandPreprocessEvent e)
+	{
+		String command = e.getMessage().contains(" ")?e.getMessage().substring(0, e.getMessage().indexOf(" ")):e.getMessage();
+		command = command.replace("/", "");
+		
+		if (Main.CommandBlacklist.contains(command))
+		{
+			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0))
+			{
+				e.setCancelled(true);
+				if (!Main.config.getBoolean("SuppressCommandDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
+			}
+		}
+	}
+	
+	@EventHandler (priority = EventPriority.HIGH)
     public void onEntityExplode(EntityExplodeEvent e) {
        
         if (e.getEntity() instanceof Creeper && !Main.config.getBoolean("Enable-Creeper")) {
@@ -102,8 +119,7 @@ public class Event  implements Listener
 	{	
 		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1))
 		{
-			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-			
+			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 	}
@@ -113,8 +129,7 @@ public class Event  implements Listener
 	{	
 		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1))
 		{
-			e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-			
+			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 	}
@@ -134,13 +149,15 @@ public class Event  implements Listener
 				
 				if (toc.exists() && fromc.exists())
 				{
-					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")))
+					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")) && !Main.config.getBoolean("SuppressEnterLeaveMessages"))
 						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", Functions.GetNickname(from.getString("Owner"))).replace("%nickw", Functions.GetNickname(to.getString("Owner")))));
 				}
 				else
 				{
-					if (fromc.exists()) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", Functions.GetNickname(from.getString("Owner")))));
-					else e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", Functions.GetNickname(to.getString("Owner")))));
+					if (fromc.exists()) {
+						if (!Main.config.getBoolean("SuppressLeaveMessages")) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", Functions.GetNickname(from.getString("Owner")))));
+					}
+					else if (!Main.config.getBoolean("SuppressEnterMessages")) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter").replace("%nick", Functions.GetNickname(to.getString("Owner")))));
 				}
 			}
 		}
@@ -162,18 +179,16 @@ public class Event  implements Listener
 		    		{
 				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1))
 				    	{
-				    		((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
-							
+				    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 							e.setCancelled(true);
 				    	}
 		    		}
 		    	}
 		    	else
 		    	{
-		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1))
+		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1) && !Main.config.getBoolean("AnyoneCanAttackMobs"))
 			    	{
-			    		((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
-						
+		    			if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);
 			    	}
 		    	}
@@ -401,19 +416,20 @@ public class Event  implements Listener
 		
 		try
 		{
-			if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0))
+			if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId()))
 			{
-				e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-				
-				e.setCancelled(true);
-			}
-			else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
-			{
-				if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0))
+				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0))
 				{
-					e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-					
+					if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 					e.setCancelled(true);
+				}
+				else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
+				{
+					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0))
+					{
+						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
+						e.setCancelled(true);
+					}
 				}
 			}
 		}

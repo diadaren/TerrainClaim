@@ -31,6 +31,11 @@ public class cfg {
 		return "plugins/TerrainClaim/UUID.yml";
 	}
 	
+	public static String protection()
+	{
+		return "plugins/TerrainClaim/protection.yml";
+	}
+	
 	protected static String OLDconfig()
 	{
 		return "plugins/TerrainClaim/terrains.yml";

@@ -6,8 +6,11 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -383,6 +386,28 @@ public class Functions {
 			}
 		}
 		
+		YamlConfiguration conf = Storage.get(cfg.config());
+		
+		conf.addDefault("AnyoneCanAttackMobs", false);
+		conf.addDefault("SuppressDenyMessages", false);
+		conf.addDefault("SuppressCommandDenyMessages", false);
+		conf.addDefault("SuppressEnterMessages", false);
+		conf.addDefault("SuppressLeaveMessages", false);
+		conf.addDefault("SuppressEnterLeaveMessages", false);
+		
+		conf.options().copyDefaults(true);
+		Storage.save(cfg.config(), conf);
+		
+		if (!Storage.get(cfg.aliases()).getKeys(false).contains("alias-manage"))
+		{
+			try {
+			    Files.write(Paths.get(cfg.aliases()), "alias-manage: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    Files.write(Paths.get(cfg.aliases()), "alias-dev: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			}catch (IOException e) {
+			    System.out.println("[TerrainClaim] Can't append alias file!");
+			}
+		}
+		
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
 	}
@@ -566,5 +591,14 @@ public class Functions {
 		else uuid.put(UUID, nickname);
 		
 		UpdateCacheFile(UUID, nickname);
+	}
+	
+	public static void ReloadCommandBlacklist()
+	{
+		Main.CommandBlacklist = new HashSet<String>();
+		
+		List<String> ls = Storage.get(cfg.protection()).getStringList("CommandBlacklist");
+		
+		Main.CommandBlacklist.addAll(ls);
 	}
 }
