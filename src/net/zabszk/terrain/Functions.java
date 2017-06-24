@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -173,6 +172,7 @@ public class Functions {
 			tconfig.set("Z", l.getBlockZ());
 			tconfig.set("Chunk", ch.getX() + "," + ch.getZ());
 			tconfig.set("Method", type);
+			tconfig.set("Flags", new ArrayList<String>());
 			
 			try
 			{
@@ -403,6 +403,17 @@ public class Functions {
 			try {
 			    Files.write(Paths.get(cfg.aliases()), "alias-manage: \"\"\n".getBytes(), StandardOpenOption.APPEND);
 			    Files.write(Paths.get(cfg.aliases()), "alias-dev: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 2 keys.");
+			}catch (IOException e) {
+			    System.out.println("[TerrainClaim] Can't append alias file!");
+			}
+		}
+		
+		if (!Storage.get(cfg.aliases()).getKeys(false).contains("alias-flag"))
+		{
+			try {
+			    Files.write(Paths.get(cfg.aliases()), "alias-flag: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 1 key.");
 			}catch (IOException e) {
 			    System.out.println("[TerrainClaim] Can't append alias file!");
 			}
@@ -501,6 +512,20 @@ public class Functions {
 	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
 	        .send(target);
 		}
+	}
+	
+	public static void PrintFlags(Player p, List<String> flags)
+	{
+		//TODO Flags
+	}
+	
+	public void PrintFlag(Player p, String flag, Boolean isSet)
+	{
+		new FancyMessage(isSet?(ChatColor.GREEN + ""):(ChatColor.RED + "") + "- ")
+        .then(flag + " - " + Main.lang("flag-desc-" + flag))
+        .command(isSet?("/tr flag -" + flag):("/tr flag +" + flag))
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+        .send(p);
 	}
 	
 	@SuppressWarnings("deprecation")

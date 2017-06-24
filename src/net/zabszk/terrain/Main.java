@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -98,6 +97,7 @@ public class Main extends JavaPlugin
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("rename") + " " + lang("help-new-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("manage") + " " + lang("help-nick"));
+			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag"));
 			
 			if (config.getBoolean("AllowCommandClaiming")) {
 				sender.sendMessage("");
@@ -117,7 +117,7 @@ public class Main extends JavaPlugin
 			if (admin || sender.hasPermission("terrain.tp.others")) sender.sendMessage(ChatColor.DARK_RED + "/" + label + " " + GetAlias("tp") + " " + lang("help-owner") + ":" + lang("help-nick"));
 			
 			sender.sendMessage("");
-			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + ColorizeVersionName(Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion(), ChatColor.DARK_GRAY)  + " on " + Bukkit.getBukkitVersion());
+			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + ColorizeVersionName(Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion(), ChatColor.DARK_GRAY));
 			sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 			sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 			sender.sendMessage(ChatColor.GOLD + "=====================================================");
@@ -407,6 +407,14 @@ public class Main extends JavaPlugin
 						sender.sendMessage(lang("info-name").replace("%name", tconfig.getString("Name")));
 						
 						List<String> Allowed = tconfig.getStringList("Allowed");
+						List<String> Flags = tconfig.getStringList("Flags");
+						
+						sender.sendMessage(lang("info-flags"));
+						for (int i = 0; i < Flags.size(); i++)
+						{
+							//TODO: Better style
+							sender.sendMessage(ChatColor.GRAY + "- " + ChatColor.GREEN + Flags.get(i) + " (" + Main.lang("flag-desc-" + Flags.get(i)) + ")");
+						}
 
 						sender.sendMessage(lang("info-admins"));
 						for (int i = 0; i < Allowed.size(); i++)
@@ -678,6 +686,24 @@ public class Main extends JavaPlugin
 				sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 				sender.sendMessage(ChatColor.GOLD + "=====================================================");
 			}
+			else if (args[0].equalsIgnoreCase("flag") && Perm("flag", sender, true, true))
+			{
+				if (sender instanceof Player)
+				{
+					if (args.length == 1) {
+						Chunk ch = ((Player) sender).getLocation().getChunk();
+						
+						File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+						if (!tconf.exists()) sender.sendMessage(format("4", lang("info-not-claimed")));
+						else
+						{
+							FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+							Functions.PrintFlags(((Player) sender).getPlayer(), tconfig.getStringList("Flags"));
+						}
+					}
+				}
+				else sender.sendMessage(format("4", "This command can be executed only from game level."));
+			}
 			else sender.sendMessage(format("4", "Unknown subcommand. Type /terrain to get help."));
 		}
 		
@@ -881,6 +907,7 @@ public class Main extends JavaPlugin
 		else if (file.getString("alias-block").equalsIgnoreCase(arg)) return "block";
 		else if (file.getString("alias-manage").equalsIgnoreCase(arg)) return "manage";
 		else if (file.getString("alias-dev").equalsIgnoreCase(arg)) return "dev";
+		else if (file.getString("alias-flag").equalsIgnoreCase(arg)) return "flag";
 		else return "";
 	}
 	
