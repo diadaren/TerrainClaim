@@ -108,9 +108,10 @@ public class Functions {
 	public static void SetFlag(File tconf, CommandSender sender, String set, Boolean validatePermissions) {
 		if (!ValidateFlagSyntax(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-valid")));
 		else if (!ValidateFlag(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-found")));
-		else if (Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("D")) sender.sendMessage(Main.format("c", Main.lang("flag-perm-D")));
-		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("C") && !Main.Perm("admin.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-C")));
-		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-B")));
+		else if (Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("D")) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-D")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("C") && !Main.Perm("admin.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-C")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-B")));
+		else if (validatePermissions && !Main.Perm("flag", sender, true, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-A")));
 		else {
 			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 			List<String> flags = tconfig.getStringList("Flags");
@@ -394,6 +395,7 @@ public class Functions {
 		conf.addDefault("SuppressEnterMessages", false);
 		conf.addDefault("SuppressLeaveMessages", false);
 		conf.addDefault("SuppressEnterLeaveMessages", false);
+		conf.addDefault("HideAccessDeniedDetails", false); //TODO: Respect this
 		
 		conf.options().copyDefaults(true);
 		Storage.save(cfg.config(), conf);
@@ -532,6 +534,15 @@ public class Functions {
 	public static void PrintFlags(Player p, List<String> flags) {
 		YamlConfiguration flg = Storage.get(cfg.flags());
 		Set<String> aflags = flg.getKeys(false);
+		
+		p.sendMessage("");
+		p.sendMessage(Main.lang("flag-help-header"));
+		p.sendMessage(Main.lang("flag-help-class-A"));
+		p.sendMessage(Main.lang("flag-help-class-B"));
+		p.sendMessage(Main.lang("flag-help-class-C"));
+		p.sendMessage(Main.lang("flag-help-class-D"));
+		p.sendMessage("");
+		
 		for (String flag : aflags) {
 			if (flag.endsWith("-desc")) {
 				if (flags.contains("+" + flag)) PrintFlag(p, flag, flg, true, true, false);
@@ -541,10 +552,13 @@ public class Functions {
 				else PrintFlag(p, flag, flg, flg.getBoolean(flag.replace("-desc", "") + "-default"), false, false);
 			}
 		}
+		p.sendMessage("");
 	}
 	
 	public static void PrintFlag(Player p, String flag, YamlConfiguration flags, Boolean value, Boolean isSet, Boolean forced) {
 		String msg;
+		Boolean permitted = false;
+		String perm = flags.getString(flag + "-perm");
 		
 		if (value && isSet) msg = Main.lang("flag-enabled");
 		else if (value) msg = Main.lang("flag-enabled-default");
@@ -552,9 +566,21 @@ public class Functions {
 		else msg = Main.lang("flag-disabled-default");
 		
 		if (forced) msg += " " + Main.lang("flag-forced");
+		if (perm.equalsIgnoreCase("A")) {
+			msg += ChatColor.GRAY;
+			permitted = p.hasPermission("terrain.player") || p.hasPermission("terrain.flag") || p.hasPermission("terrain.admin");
+		} else if (perm.equalsIgnoreCase("B")) {
+			msg += ChatColor.YELLOW;
+			permitted = p.hasPermission("terrain.admin") || p.hasPermission("terrain.restricted.flag." + flag);
+		}
+		else if (perm.equalsIgnoreCase("C")) {
+			msg += ChatColor.GOLD;
+			permitted = p.hasPermission("terrain.admin") || p.hasPermission("terrain.admin.flag." + flag);
+		}
+		else if (perm.equalsIgnoreCase("D")) msg += ChatColor.WHITE + "" + ChatColor.STRIKETHROUGH;
 		
 		new FancyMessage(ChatColor.DARK_GRAY + "- ")
-        .then(msg + ChatColor.GRAY + " " + flag + "(" + flags.getString(flag + "-desc") + ")")
+        .then(msg + " " + flag + (permitted?"":(ChatColor.RED + "*")) + ChatColor.GRAY + " (" + flags.getString(flag + "-desc") + ")")
         .command(forced?(isSet?("/tr flag !" + flag):("/tr flag @" + flag)):(isSet?("/tr flag -" + flag):("/tr flag +" + flag)))
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
         .send(p);

@@ -89,14 +89,15 @@ public class Main extends JavaPlugin {
 			if (admin || sender.hasPermission("terrain.add.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("add") + " " + lang("help-nick") + " " + lang("help-rank") + ChatColor.DARK_RED + " [-a | r]");
 			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("add") + " " + lang("help-nick") + " " + lang("help-rank") + " [-a]");
 			sender.sendMessage(ChatColor.GRAY + lang("help-ranks-help") + " /" + label + " " + GetAlias("ranks"));
-			if (admin || sender.hasPermission("terrain.remove.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("remove") + " " + lang("help-nick") + ChatColor.DARK_RED + " [-a | R]");
+			if (admin || sender.hasPermission("terrain.remove.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("remove") + " " + lang("help-nick") + ChatColor.DARK_RED + " [-a | r]");
 			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("remove") + " " + lang("help-nick") + " [-a]");
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("list"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("tp") + " " + lang("help-terrain-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("rename") + " " + lang("help-new-name"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("info"));
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("manage") + " " + lang("help-nick"));
-			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag"));
+			if (admin || sender.hasPermission("terrain.flag.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag") + ChatColor.DARK_RED + " [-a | r]");
+			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag") + " [-a]");
 			
 			if (config.getBoolean("AllowCommandClaiming")) {
 				sender.sendMessage("");
