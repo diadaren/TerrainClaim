@@ -47,7 +47,7 @@ public class Event  implements Listener
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e)
 	{
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId()))
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId()))
 		{
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
@@ -58,7 +58,7 @@ public class Event  implements Listener
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onBreak (BlockBreakEvent e)
 	{
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId()))
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId()))
 		{
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
@@ -95,7 +95,7 @@ public class Event  implements Listener
 		
 		if (Main.CommandBlacklist.contains(command))
 		{
-			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0))
+			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0, true))
 			{
 				e.setCancelled(true);
 				if (!Main.config.getBoolean("SuppressCommandDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
@@ -117,7 +117,7 @@ public class Event  implements Listener
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onBucketFill (PlayerBucketFillEvent e)
 	{	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1))
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true))
 		{
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
@@ -127,7 +127,7 @@ public class Event  implements Listener
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onBucketEmpty (PlayerBucketEmptyEvent e)
 	{	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1))
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true))
 		{
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
@@ -177,7 +177,7 @@ public class Event  implements Listener
 		    	{
 		    		if (!Main.config.getBoolean("Enable-PvP"))
 		    		{
-				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1))
+				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true))
 				    	{
 				    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 							e.setCancelled(true);
@@ -186,7 +186,7 @@ public class Event  implements Listener
 		    	}
 		    	else
 		    	{
-		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1) && !Main.config.getBoolean("AnyoneCanAttackMobs"))
+		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) && !Main.config.getBoolean("AnyoneCanAttackMobs"))
 			    	{
 		    			if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);
@@ -418,14 +418,14 @@ public class Event  implements Listener
 		{
 			if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId()))
 			{
-				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0))
+				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true))
 				{
 					if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 					e.setCancelled(true);
 				}
 				else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
 				{
-					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0))
+					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0, true))
 					{
 						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);

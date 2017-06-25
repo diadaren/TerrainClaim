@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -139,6 +140,62 @@ public class Functions {
 			
 			sender.sendMessage(Main.format("3", Main.lang("rm-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
 		}
+	}
+	
+	public static void SetFlag(File tconf, CommandSender sender, String set)
+	{
+		if (!ValidateFlagSyntax(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-valid")));
+		else if (!ValidateFlag(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-found")));
+		else
+		{
+			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			
+			List<String> flags = tconfig.getStringList("Flags");
+			int id = -1;
+			
+			for (int i = 0; i < flags.size(); i++)
+			{
+				if (id == -1)
+				{
+					String[] flag = flags.get(i).split(",");
+					
+					if (flag[0].substring(1).equalsIgnoreCase(set.substring(1))) id = i;
+				}
+			}
+			
+			if (id == -1) flags.add(set);
+			else flags.set(id, set);
+			
+			flags.sort(new FlagComparator());
+			
+			tconfig.set("Flags", flags);
+			
+			try { tconfig.save(tconf); } catch (Exception e) { System.out.println("Can't save claim file!"); }
+		}
+	}
+	
+	public static class FlagComparator implements Comparator<String> {
+	    @Override
+	    public int compare(String o1, String o2) {
+	        o1 = o1.substring(1);
+	        o2 = o2.substring(1);
+	        return o1.compareToIgnoreCase(o2);
+	    }
+	}
+	
+	public static boolean ValidateFlagSyntax(String flag)
+	{
+		if (flag.startsWith("+") || flag.startsWith("-") || flag.startsWith("!") || flag.startsWith("@")) return true;
+		else return false;
+	}
+	
+	public static boolean ValidateFlag(String flag)
+	{
+		File conffile = new File(cfg.flags());
+		YamlConfiguration conf = YamlConfiguration.loadConfiguration(conffile);
+		
+		if (conf.getKeys(false).contains(flag.substring(1).toLowerCase() + "-desc")) return true;
+		else return false;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -461,10 +518,10 @@ public class Functions {
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
         .send(target);
 		
-		if (chunkOwner) {
+		if (chunkOwner || target.hasPermission("terrain.remove.others.recursive")) {
 			new FancyMessage("")
 	        .then(Main.lang("info-menu-remove-all"))
-	        .command("/tr remove " + nick + " -a")
+	        .command("/tr remove " + nick + " -" + (chunkOwner?"a":"r"))
 	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
 	        .send(target);
 		}
@@ -477,10 +534,10 @@ public class Functions {
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
         .send(target);
 		
-		if (chunkOwner) {
+		if (chunkOwner || target.hasPermission("terrain.add.others.recursive")) {
 			new FancyMessage("")
 	        .then(Main.lang("info-menu-helper-all"))
-	        .command("/tr add " + nick + " 0 -a")
+	        .command("/tr add " + nick + " 0 -" + (chunkOwner?"a":"r"))
 	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
 	        .send(target);
 		}
@@ -491,10 +548,10 @@ public class Functions {
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
         .send(target);
 		
-		if (chunkOwner) {
+		if (chunkOwner || target.hasPermission("terrain.add.others.recursive")) {
 			new FancyMessage("")
 	        .then(Main.lang("info-menu-member-all"))
-	        .command("/tr add " + nick + " 1 -a")
+	        .command("/tr add " + nick + " 1 -" + (chunkOwner?"a":"r"))
 	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
 	        .send(target);
 		}
@@ -505,10 +562,10 @@ public class Functions {
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
         .send(target);
 		
-		if (chunkOwner) {
+		if (chunkOwner || target.hasPermission("terrain.add.others.recursive")) {
 			new FancyMessage("")
 	        .then(Main.lang("info-menu-admin-all"))
-	        .command("/tr add " + nick + " 2 -a")
+	        .command("/tr add " + nick + " 2 -"+ (chunkOwner?"a":"r"))
 	        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
 	        .send(target);
 		}
@@ -519,12 +576,21 @@ public class Functions {
 		//TODO Flags
 	}
 	
-	public static void PrintFlag(Player p, String flag, Boolean isSet)
+	public static void PrintFlag(Player p, String flag, YamlConfiguration flags, Boolean value, Boolean isSet, Boolean forced)
 	{
-		new FancyMessage(isSet?(ChatColor.GREEN + ""):(ChatColor.RED + "") + "- ")
-        .then(flag + " - " + Main.lang("flag-desc-" + flag))
-        .command(isSet?("/tr flag -" + flag):("/tr flag +" + flag))
-        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("info-menu-tooltip")))
+		String msg;
+		
+		if (value && isSet) msg = Main.lang("flag-enabled");
+		else if (value) msg = Main.lang("flag-enabled-default");
+		else if (isSet) msg = Main.lang("flag-disabled");
+		else msg = Main.lang("flag-disabled-default");
+		
+		if (forced) msg += " " + Main.lang("flag-forced");
+		
+		new FancyMessage(ChatColor.DARK_GRAY + "- ")
+        .then(msg + ChatColor.GRAY + " " + flag + "(" + flags.getString(flag + "-desc") + ")")
+        .command(forced?(isSet?("/tr flag !" + flag):("/tr flag @" + flag)):(isSet?("/tr flag -" + flag):("/tr flag +" + flag)))
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
         .send(p);
 	}
 	
