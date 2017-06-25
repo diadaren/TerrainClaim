@@ -38,17 +38,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class Event  implements Listener
 {
 	@EventHandler (priority = EventPriority.LOW)
-	public void onJoin (PlayerJoinEvent e)
-	{
+	public void onJoin (PlayerJoinEvent e) {
 		Functions.CacheUUID(e.getPlayer().getUniqueId().toString(), e.getPlayer().getName());
 	}
 	
 	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
-	public void onPlace (BlockPlaceEvent e)
-	{
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId()))
-		{
+	public void onPlace (BlockPlaceEvent e) {
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId())) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
@@ -56,30 +53,20 @@ public class Event  implements Listener
 	
 	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
-	public void onBreak (BlockBreakEvent e)
-	{
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId()))
-		{
+	public void onBreak (BlockBreakEvent e) {
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId())) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
-		}
-		else
-		{
-			if (e.getBlock().getType() == Material.BEDROCK)
-			{
+		} else {
+			if (e.getBlock().getType() == Material.BEDROCK) {
 				Chunk ch = e.getBlock().getLocation().getChunk();
-				
 				File tconf = new File("plugins/TerrainClaim/claims/" + e.getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-				if (tconf.exists())
-				{
+				if (tconf.exists()) {
 					FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-					
 					Location l = e.getBlock().getLocation();
 					
-					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z"))
-					{
+					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z")) {
 						e.getPlayer().sendMessage(Main.format("4", Main.lang("click-right-to-remove")));
-						
 						e.setCancelled(true);
 					}
 				}
@@ -93,10 +80,8 @@ public class Event  implements Listener
 		String command = e.getMessage().contains(" ")?e.getMessage().substring(0, e.getMessage().indexOf(" ")):e.getMessage();
 		command = command.replace("/", "");
 		
-		if (Main.CommandBlacklist.contains(command))
-		{
-			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0, true))
-			{
+		if (Main.CommandBlacklist.contains(command)) {
+			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0, true)) {
 				e.setCancelled(true);
 				if (!Main.config.getBoolean("SuppressCommandDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			}
@@ -105,7 +90,6 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.HIGH)
     public void onEntityExplode(EntityExplodeEvent e) {
-       
         if (e.getEntity() instanceof Creeper && !Main.config.getBoolean("Enable-Creeper")) {
         	Chunk ch = e.getEntity().getLocation().getChunk();
     		File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
@@ -115,45 +99,35 @@ public class Event  implements Listener
     }
 	
 	@EventHandler (priority = EventPriority.HIGH)
-	public void onBucketFill (PlayerBucketFillEvent e)
-	{	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true))
-		{
+	public void onBucketFill (PlayerBucketFillEvent e) {	
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true)) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 	}
 	
 	@EventHandler (priority = EventPriority.HIGH)
-	public void onBucketEmpty (PlayerBucketEmptyEvent e)
-	{	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true))
-		{
+	public void onBucketEmpty (PlayerBucketEmptyEvent e) {	
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true)) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
 	}
 	
 	@EventHandler (priority = EventPriority.NORMAL)
-	public void onMove(PlayerMoveEvent e)
-	{
-		if (!e.getFrom().getChunk().equals(e.getTo().getChunk()))
-		{
+	public void onMove(PlayerMoveEvent e) {
+		if (!e.getFrom().getChunk().equals(e.getTo().getChunk())) {
 			File fromc = new File("plugins/TerrainClaim/claims/" + e.getFrom().getWorld().getName() + "/" + e.getFrom().getChunk().getX() + "," + e.getFrom().getChunk().getZ() + ".yml");
 			File toc = new File("plugins/TerrainClaim/claims/" + e.getTo().getWorld().getName() + "/" + e.getTo().getChunk().getX() + "," + e.getTo().getChunk().getZ() + ".yml");
 			
-			if (toc.exists() || fromc.exists())
-			{
+			if (toc.exists() || fromc.exists()) {
 				FileConfiguration from = YamlConfiguration.loadConfiguration(fromc);
 				FileConfiguration to = YamlConfiguration.loadConfiguration(toc);
 				
-				if (toc.exists() && fromc.exists())
-				{
+				if (toc.exists() && fromc.exists()) {
 					if (!from.getString("Owner").equalsIgnoreCase(to.getString("Owner")) && !Main.config.getBoolean("SuppressEnterLeaveMessages"))
 						e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-enter-leave").replace("%nickl", Functions.GetNickname(from.getString("Owner"))).replace("%nickw", Functions.GetNickname(to.getString("Owner")))));
-				}
-				else
-				{
+				} else {
 					if (fromc.exists()) {
 						if (!Main.config.getBoolean("SuppressLeaveMessages")) e.getPlayer().sendMessage(Main.format("3", Main.lang("chunk-leave").replace("%nick", Functions.GetNickname(from.getString("Owner")))));
 					}
@@ -164,37 +138,25 @@ public class Event  implements Listener
 	}
 	
 	@EventHandler (priority = EventPriority.HIGHEST)
-	public void onEntityDamage(EntityDamageByEntityEvent e)
-	{
+	public void onEntityDamage(EntityDamageByEntityEvent e) {
 		Chunk ch = e.getEntity().getLocation().getChunk();
 		File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 		
-		if (tconf.exists())
-		{
-		    if (e.getDamager() instanceof Player)
-		    {
-		    	if (e.getEntity() instanceof Player)
-		    	{
-		    		if (!Main.config.getBoolean("Enable-PvP"))
-		    		{
-				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true))
-				    	{
+		if (tconf.exists()) {
+		    if (e.getDamager() instanceof Player) {
+		    	if (e.getEntity() instanceof Player) {
+		    		if (!Main.config.getBoolean("Enable-PvP")) {
+				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true)) {
 				    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 							e.setCancelled(true);
 				    	}
 		    		}
 		    	}
-		    	else
-		    	{
-		    		if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) && !Main.config.getBoolean("AnyoneCanAttackMobs"))
-			    	{
-		    			if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
-						e.setCancelled(true);
-			    	}
-		    	}
-		    }
-		    else if (e.getEntity() instanceof Player)
-		    {
+		    	else if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) && !Main.config.getBoolean("AnyoneCanAttackMobs")) {
+		    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
+					e.setCancelled(true);
+			    }
+		    } else if (e.getEntity() instanceof Player) {
 		    	if (!Main.config.getBoolean("Enable-PvE")) e.setCancelled(true);
 		    }
 		    else if (!(Main.config.getBoolean("Enable-EvE"))) e.setCancelled(true);
@@ -203,45 +165,31 @@ public class Event  implements Listener
 	
 	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
-	public void onInteract (PlayerInteractEvent e)
-	{
-		if (e.getAction() == Action.RIGHT_CLICK_BLOCK)
-		{
-			if (e.getPlayer().getItemInHand().getType() == Material.getMaterial(Main.config.getString("TerrainBlock")))
-			{
+	public void onInteract (PlayerInteractEvent e) {
+		if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (e.getPlayer().getItemInHand().getType() == Material.getMaterial(Main.config.getString("TerrainBlock"))) {
 				ItemStack i = e.getPlayer().getItemInHand();
 				ItemStack b = Functions.getTerrainBlock();
 				
 				ItemMeta im = i.getItemMeta();
 				ItemMeta bm = b.getItemMeta();
 				
-				if (im.equals(bm))
-				{
+				if (im.equals(bm)) {
 					e.setCancelled(true);
 					
-					if (Main.config.getBoolean("AllowBlockClaiming"))
-					{
+					if (Main.config.getBoolean("AllowBlockClaiming")) {
 						if (e.getBlockFace() != BlockFace.UP) e.getPlayer().sendMessage(Main.format("4", Main.lang("click-on-top")));
-						else
-						{
-							if (Main.CheckWorld(e.getClickedBlock().getWorld()))
-							{
-								if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation()))
-								{
-									if (Main.Perm("claim", (CommandSender) e.getPlayer(), true, true))
-									{
+						else {
+							if (Main.CheckWorld(e.getClickedBlock().getWorld())) {
+								if (!Main.config.getBoolean("CheckForWorldGuardRegions") || Main.getWorldGuard() == null || Main.getWorldGuard().canBuild(e.getPlayer(), e.getClickedBlock().getLocation())) {
+									if (Main.Perm("claim", (CommandSender) e.getPlayer(), true, true)) {
 										Chunk ch = e.getClickedBlock().getLocation().getChunk();
-										
 										File tconf = new File("plugins/TerrainClaim/claims/" + e.getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 										if (tconf.exists()) e.getPlayer().sendMessage(Main.format("4", Main.lang("already-claimed")));
-										else
-										{
-											try
-											{
+										else {
+											try {
 												if (!tconf.exists()) tconf.createNewFile();
-											}
-											catch (IOException ex)
-											{
+											} catch (IOException ex) {
 												System.out.println("[TerrainClaim] Config file creation error.");
 											}
 											
@@ -259,55 +207,38 @@ public class Event  implements Listener
 											tconfig.set("Chunk", ch.getX() + "," + ch.getZ());
 											tconfig.set("Method", "B");
 											
-											try
-											{
+											try {
 												tconfig.save(tconf);
-											}
-											catch (IOException ex)
-											{
+											} catch (IOException ex) {
 												System.out.println("[TerrainClaim] Config file saving error.");
 											}
 											
 											List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-											
 											tereny.add(e.getPlayer().getWorld().getName() + ";" + ch.getX() + ";" + ch.getZ() + ";" + e.getPlayer().getUniqueId().toString() + ";" + e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ() + ";B");
-											
 											Storage.setclaims(tereny);
-											
 											e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation().add(0, 1, 0)).setType(Material.BEDROCK);
 											
-											try
-											{
-												if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
-												{
+											try {
+												if (Storage.get(cfg.experimental()).getBoolean("PlaySound")) {
 													e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_WITHER_AMBIENT, 1, 0);
 												}
-											}
-											catch (Exception ex)
-											{
+											} catch (Exception ex) {
 												ex.printStackTrace();
 												System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
 											}
 											
-											try
-											{
-												if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
-												{
-													for (int a = 0; a < 500; a++)
-													{
+											try {
+												if (Storage.get(cfg.experimental()).getBoolean("PlayEffect")) {
+													for (int a = 0; a < 500; a++) {
 														e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.CLOUD, 5);
 													}
 												}
-											}
-											catch (Exception ex)
-											{
+											} catch (Exception ex) {
 												ex.printStackTrace();
 												System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
 											}
-											
 																	
-											if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
-											{
+											if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
 												if (e.getPlayer().getItemInHand().getAmount() > 1) e.getPlayer().getItemInHand().setAmount(e.getPlayer().getItemInHand().getAmount() - 1);
 												else e.getPlayer().setItemInHand(new ItemStack(Material.AIR));
 											}
@@ -322,89 +253,62 @@ public class Event  implements Listener
 						}
 					}
 					else e.getPlayer().sendMessage(Main.format("4", Main.lang("claim-block-disabled")));
-					
 					e.getPlayer().updateInventory();
 				}
-			}
-			else if (e.getClickedBlock().getType() == Material.BEDROCK)
-			{
+			} else if (e.getClickedBlock().getType() == Material.BEDROCK) {
 				Chunk ch = e.getClickedBlock().getLocation().getChunk();
 				
 				File tconf = new File("plugins/TerrainClaim/claims/" + e.getPlayer().getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-				if (tconf.exists())
-				{
+				if (tconf.exists()) {
 					FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-					
 					Location l = e.getClickedBlock().getLocation();
 					
-					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z"))
-					{
-						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true))
-						{
-							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE)
-							{
+					if (l.getWorld().getName().equals(tconfig.getString("world")) && l.getBlockX() == tconfig.getInt("X") && l.getBlockY() == tconfig.getInt("Y") && l.getBlockZ() == tconfig.getInt("Z")) {
+						if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) || Main.Perm("unclaim.others", (CommandSender) e.getPlayer(), false, true)) {
+							if ((tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getUniqueId().toString()) && (e.getPlayer().getItemInHand() == null || e.getPlayer().getItemInHand().getTypeId() == 0)) || e.getPlayer().getItemInHand().getType() == Material.GOLD_AXE) {
 								e.getPlayer().getWorld().getBlockAt(e.getClickedBlock().getLocation()).setType(Material.AIR);
-								
 								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-								
 								String del = "";
 								
-								for (String t : tereny)
-								{
+								for (String t : tereny) {
 									String[] s = t.split(";");
 									
 									if (s[0].equalsIgnoreCase(e.getPlayer().getWorld().getName()) && s[1].equals(Integer.toString(ch.getX())) && s[2].equals(Integer.toString(ch.getZ()))) del = t;
 								}
 								
 								if (!del.equals("")) tereny.remove(del);
-								
 								Storage.setclaims(tereny);
-								
 								tconf.delete();
 								
-								if (e.getPlayer().getGameMode() != GameMode.CREATIVE)
-								{
+								if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
 									ItemStack bt = Functions.getTerrainBlock();
-									
 									bt.setAmount(1);
-									
 									e.getPlayer().getInventory().addItem(bt);
 									e.getPlayer().updateInventory();
 								}
 								
-								try
-								{
-									if (Storage.get(cfg.experimental()).getBoolean("PlaySound"))
-									{
+								try {
+									if (Storage.get(cfg.experimental()).getBoolean("PlaySound")) {
 										e.getPlayer().getWorld().playSound(e.getClickedBlock().getLocation().add(0, 1, 0), Sound.ENTITY_GENERIC_EXPLODE, 1, 0);
 									}
-								}
-								catch (Exception ex)
-								{
+								} catch (Exception ex) {
 									ex.printStackTrace();
 									System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
 								}
 								
-								try
-								{
-									if (Storage.get(cfg.experimental()).getBoolean("PlayEffect"))
-									{
-										for (int a = 0; a < 500; a++)
-										{
+								try {
+									if (Storage.get(cfg.experimental()).getBoolean("PlayEffect")) {
+										for (int a = 0; a < 500; a++) {
 											e.getPlayer().getWorld().playEffect(e.getClickedBlock().getLocation().add(0, 1, 0), Effect.EXPLOSION_HUGE, 5);
 										}
 									}
-								}
-								catch (Exception ex)
-								{
+								} catch (Exception ex) {
 									ex.printStackTrace();
 									System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
 								}
 								
 								e.getPlayer().sendMessage(Main.format("b", Main.lang("claim-unclaimed")));
-							}
-							else
-							{
+							} else {
 								if (tconfig.getString("Owner").equalsIgnoreCase(e.getPlayer().getName())) e.getPlayer().sendMessage(Main.format("e", Main.lang("claim-use-empty-hand")));
 								else e.getPlayer().sendMessage(Main.format("e", Main.lang("claim-use-golden-axe")));
 							}
@@ -414,19 +318,13 @@ public class Event  implements Listener
 			}
 		}
 		
-		try
-		{
-			if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId()))
-			{
-				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true))
-				{
+		try {
+			if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId())) {
+				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true)) {
 					if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 					e.setCancelled(true);
-				}
-				else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK)
-				{
-					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0, true))
-					{
+				} else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0, true)) {
 						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);
 					}
