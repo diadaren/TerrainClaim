@@ -395,7 +395,6 @@ public class Functions {
 		conf.addDefault("SuppressEnterMessages", false);
 		conf.addDefault("SuppressLeaveMessages", false);
 		conf.addDefault("SuppressEnterLeaveMessages", false);
-		conf.addDefault("HideAccessDeniedDetails", false); //TODO: Respect this
 		
 		conf.options().copyDefaults(true);
 		Storage.save(cfg.config(), conf);
@@ -442,6 +441,36 @@ public class Functions {
 		
 		//TODO: Transfer subcommand
 		//TODO: Kick subcommand
+	}
+	
+	protected static void ProcessClaims() {
+		YamlConfiguration c = Storage.get(cfg.config());
+		List<String> tereny = c.getStringList("Terrains");
+		System.out.println("[TerrainClaim] Performing claims validation...");
+		YamlConfiguration aflags = Storage.get(cfg.flags());
+		
+		for (int i = 0; i < tereny.size(); i++) {
+			System.out.println("[TerrainClaim] Validating claims [ " + (i + 1) + "/" + tereny.size() + " ]");
+			String[] sp = tereny.get(i).split(";");
+			File tconf = new File("plugins/TerrainClaim/claims/" + sp[0] + "/" + sp[1] + "," + sp[2] + ".yml");
+			System.out.println("[TerrainClaim] Validating claim " + sp[0] + "/" + sp[1] + "," + sp[2]);
+			YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			List<String> flags = tconfig.getStringList("Flags");
+			for (String flag : flags) {
+				if ((flag.startsWith("+") && aflags.getBoolean(flag.substring(1) + "-default") == true) || flag.startsWith("-") && aflags.getBoolean(flag.substring(1) + "-default") == false) flags.remove(flag);
+				if (aflags.getString(flag.substring(1) + "-perm").equalsIgnoreCase("D")) flags.remove(flag);
+			}
+			flags.sort(new FlagComparator());
+			Storage.save("plugins/TerrainClaim/claims/" + sp[0] + "/" + sp[1] + "," + sp[2] + ".yml", tconfig);
+			
+			try {
+				tconfig.save(tconf);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println("[TerrainClaim] Claims validated and saved.");
 	}
 	
 	private static void Copy(String value, YamlConfiguration old, YamlConfiguration n) {

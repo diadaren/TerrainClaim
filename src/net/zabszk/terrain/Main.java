@@ -53,7 +53,6 @@ public class Main extends JavaPlugin {
 		event = new Event();
 		
 		Reload();
-		
 		getServer().getPluginManager().registerEvents(event, this);
 		
 		if (config.getBoolean("AllowMetrics")) {
@@ -66,11 +65,12 @@ public class Main extends JavaPlugin {
 			}
 		}
 		
+		Functions.ProcessClaims();
+		
 		System.out.println("[TerrainClaim] Plugin enabled!");
 		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion() + " on " + Bukkit.getBukkitVersion());
 		System.out.println("[TerrainClaim] Copyright by ZABSZK, 2017");
 		System.out.println("[TerrainClaim] Licensed on Mozilla Public License 2.0");
-		
 	}
 	
 	@Override
