@@ -797,6 +797,7 @@ public class Main extends JavaPlugin
 		Functions.GenerateConfig("worlds");
 		Functions.GenerateConfig("claims");
 		Functions.GenerateConfig("aliases");
+		Functions.GenerateConfig("flags");
 		Functions.GenerateConfig("protection");
 		Functions.GenerateConfig("experimental");
 		

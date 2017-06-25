@@ -1,10 +1,10 @@
-#If enabled you can't build on blacklisted worlds.
+#If enabled you can't claim on blacklisted worlds.
 UseBlacklist: false
 BlacklistedWorlds:
 - WorldA
 - WorldB
 
-#If enabled you can't build on NON-WHITELISTED worlds.
+#If enabled you can't claim on NON-WHITELISTED worlds.
 UseWhitelist: false
 WhitelistedWorlds:
 - WorldA

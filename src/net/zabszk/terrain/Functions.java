@@ -519,7 +519,7 @@ public class Functions {
 		//TODO Flags
 	}
 	
-	public void PrintFlag(Player p, String flag, Boolean isSet)
+	public static void PrintFlag(Player p, String flag, Boolean isSet)
 	{
 		new FancyMessage(isSet?(ChatColor.GREEN + ""):(ChatColor.RED + "") + "- ")
         .then(flag + " - " + Main.lang("flag-desc-" + flag))
