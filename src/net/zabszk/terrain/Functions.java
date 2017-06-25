@@ -105,9 +105,12 @@ public class Functions {
 		}
 	}
 	
-	public static void SetFlag(File tconf, CommandSender sender, String set) {
+	public static void SetFlag(File tconf, CommandSender sender, String set, Boolean validatePermissions) {
 		if (!ValidateFlagSyntax(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-valid")));
 		else if (!ValidateFlag(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-found")));
+		else if (Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("D")) sender.sendMessage(Main.format("c", Main.lang("flag-perm-D")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("C") && !Main.Perm("admin.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-C")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-B")));
 		else {
 			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 			List<String> flags = tconfig.getStringList("Flags");
@@ -130,6 +133,27 @@ public class Functions {
 		}
 	}
 	
+	public static void SetFlag(File tconf, String set) {
+		if (ValidateFlagSyntax(set) && ValidateFlag(set)) {
+			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			List<String> flags = tconfig.getStringList("Flags");
+			int id = -1;
+			
+			for (int i = 0; i < flags.size(); i++) {
+				if (id == -1) {
+					String[] flag = flags.get(i).split(",");
+					if (flag[0].substring(1).equalsIgnoreCase(set.substring(1))) id = i;
+				}
+			}
+			
+			if (id == -1) flags.add(set);
+			else flags.set(id, set);
+			flags.sort(new FlagComparator());
+			tconfig.set("Flags", flags);
+			try { tconfig.save(tconf); } catch (Exception e) { System.out.println("Can't save claim file!"); }
+		}
+	}
+	
 	public static class FlagComparator implements Comparator<String> {
 	    @Override
 	    public int compare(String o1, String o2) {
@@ -141,18 +165,27 @@ public class Functions {
 	
 	public static boolean ValidateFlagSyntax(String flag) {
 		if (flag.startsWith("+") || flag.startsWith("-") || flag.startsWith("!") || flag.startsWith("@")) return true;
-		else return false;
+		return false;
 	}
 	
 	public static boolean ValidateFlag(String flag) {
 		File conffile = new File(cfg.flags());
 		YamlConfiguration conf = YamlConfiguration.loadConfiguration(conffile);
 		if (conf.getKeys(false).contains(flag.substring(1).toLowerCase() + "-desc")) return true;
-		else return false;
+		return false;
+	}
+	
+	public static boolean HasActiveFlag (Chunk ch, String flag) {
+		if (Main.flags.getString(flag + "-perm").equalsIgnoreCase("D")) return false;
+		YamlConfiguration tconf = Storage.get("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+		List<String> flags = tconf.getStringList("Flags");
+		if (flags.contains("+" + flag) || flags.contains("@" + flag)) return true;
+		if (flags.contains("-" + flag) || flags.contains("!" + flag)) return false;
+		return Main.flags.getBoolean(flag + "-default");
 	}
 	
 	@SuppressWarnings("deprecation")
-	protected static void Claim(Player target, String type) {
+	public static void Claim(Player target, String type) {
 		Chunk ch = target.getLocation().getChunk();
 		File tconf = new File("plugins/TerrainClaim/claims/" + target.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 		if (tconf.exists()) target.sendMessage(Main.format("4", Main.lang("already-claimed")));
@@ -593,7 +626,7 @@ public class Functions {
 		else return null;
 	}
 	
-	protected static void UpdateCacheFile(String UUID, String nickname) {
+	public static void UpdateCacheFile(String UUID, String nickname) {
 		YamlConfiguration c = Storage.get(cfg.UUID());
 		c.set(UUID, nickname);
 		Storage.save(cfg.UUID(), c);

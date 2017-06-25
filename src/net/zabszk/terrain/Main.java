@@ -33,12 +33,14 @@ public class Main extends JavaPlugin {
 	private static Main instance;
 	
 	private static File langfile;
-	protected static FileConfiguration langconf;
+	protected static YamlConfiguration langconf;
 	
 	private static Event event;
 	
-	private static File configfile;
-	protected static FileConfiguration config;
+	public static File configfile;
+	public static YamlConfiguration config;
+	
+	public static YamlConfiguration flags;
 	
 	public static final int LangVersion = 6;
 	
@@ -602,7 +604,7 @@ public class Main extends JavaPlugin {
 									String[] split = tereny.get(i).split(";");
 									
 									File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
-									Functions.SetFlag(tconf, sender, args[1]);
+									Functions.SetFlag(tconf, sender, args[1], true);
 								}
 							}
 						} else if (args.length == 4 && args[3].equalsIgnoreCase("-r")) {
@@ -620,7 +622,7 @@ public class Main extends JavaPlugin {
 										String[] split = tereny.get(i).split(";");
 										
 										File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
-										Functions.SetFlag(tconf, sender, args[1]);
+										Functions.SetFlag(tconf, sender, args[1], true);
 									}
 								}
 							}
@@ -629,7 +631,7 @@ public class Main extends JavaPlugin {
 							
 							if (permitted(ch, (Player) sender, 2, false) || Perm("flag.others", sender, false, true)) {
 								File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-								if (tconf.exists()) Functions.SetFlag(tconf, sender, args[1]);
+								if (tconf.exists()) Functions.SetFlag(tconf, sender, args[1], true);
 								else sender.sendMessage(format("4", lang("flag-not-claimed")));
 							}
 						}
@@ -640,7 +642,7 @@ public class Main extends JavaPlugin {
 		return true;
 	}
 	
-	protected static Boolean Perm(String perm, CommandSender sender, Boolean user, Boolean admin) {
+	public static Boolean Perm(String perm, CommandSender sender, Boolean user, Boolean admin) {
 		Boolean result = sender.hasPermission("terrain." + perm);
 		
 		if (!result && user) result = sender.hasPermission("terrain.player");
@@ -667,7 +669,7 @@ public class Main extends JavaPlugin {
     }
 	
 	@SuppressWarnings("unchecked")
-	public Player[] getOnline() {
+	public static Player[] getOnline() {
         try {
             Method method = Bukkit.class.getMethod("getOnlinePlayers");
             Object players = method.invoke(null);
@@ -730,14 +732,16 @@ public class Main extends JavaPlugin {
 		
 		Functions.MigrateConfig();
 		
-		configfile = new File("plugins/TerrainClaim/config.yml");
+		configfile = new File(cfg.config());
 		config = YamlConfiguration.loadConfiguration(configfile);
 		
 		langfile = new File("plugins/TerrainClaim/lang/" + config.getString("Lang") + ".yml");
 		langconf = YamlConfiguration.loadConfiguration(langfile);
+		
+		flags = Storage.get(cfg.flags());
 	}
 	
-	protected static WorldGuardPlugin getWorldGuard() {
+	public static WorldGuardPlugin getWorldGuard() {
 	    Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 	 
 	    if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
