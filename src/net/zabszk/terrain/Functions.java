@@ -190,7 +190,7 @@ public class Functions {
 	
 	public static boolean HasActiveFlag (Chunk ch, String flag) {
 		if (Main.flags.getString(flag + "-perm").equalsIgnoreCase("D")) return false;
-		if (!(new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml").exists())) {
+		if (new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml").exists()) {
 			YamlConfiguration tconf = Storage.get("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 			List<String> flags = tconf.getStringList("Flags");
 			if (flags.contains("+" + flag) || flags.contains("@" + flag)) return true;
