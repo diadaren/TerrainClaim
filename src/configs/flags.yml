@@ -33,7 +33,7 @@ blacklisted-commands-anyone-desc: Guests can use blacklisted commands
 blacklisted-commands-anyone-default: false
 blacklisted-commands-anyone-perm: A
 
-mob-spawnin-desc: Mobs can spawn and be spawned
+mob-spawning-desc: Mobs can spawn and be spawned
 mob-spawning-default: true
 mob-spawning-perm: A
 

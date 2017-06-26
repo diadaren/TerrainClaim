@@ -109,11 +109,12 @@ public class Functions {
 		if (!ValidateFlagSyntax(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-valid")));
 		else if (!ValidateFlag(set)) sender.sendMessage(Main.format("4", Main.lang("flag-not-found")));
 		else if (Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("D")) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-D")));
-		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("C") && !Main.Perm("admin.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-C")));
-		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(0), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-B")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("C") && !Main.Perm("admin.flag." + set.substring(1), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-C")));
+		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(1), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-B")));
 		else if (validatePermissions && !Main.Perm("flag", sender, true, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-A")));
 		else {
 			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			YamlConfiguration flconfig = Storage.get(cfg.flags());
 			List<String> flags = tconfig.getStringList("Flags");
 			int id = -1;
 			
@@ -125,7 +126,11 @@ public class Functions {
 			}
 			
 			if (id == -1) flags.add(set);
-			else flags.set(id, set);
+			else {
+				if (set.startsWith("-") && flconfig.getBoolean(set.substring(1) + "-default") == false) flags.remove(id);
+				else if (set.startsWith("+") && flconfig.getBoolean(set.substring(1) + "-default") == true) flags.remove(id);
+				else flags.set(id, set);
+			}
 			flags.sort(new FlagComparator());
 			tconfig.set("Flags", flags);
 			try { tconfig.save(tconf); } catch (Exception e) { System.out.println("Can't save claim file!"); }
@@ -403,14 +408,14 @@ public class Functions {
 			try {
 			    Files.write(Paths.get(cfg.aliases()), "alias-manage: \"\"\n".getBytes(), StandardOpenOption.APPEND);
 			    Files.write(Paths.get(cfg.aliases()), "alias-dev: \"\"\n".getBytes(), StandardOpenOption.APPEND);
-			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 2 keys.");
+			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 2 keys (manage and dev).");
 			} catch (IOException e) {
 			    System.out.println("[TerrainClaim] Can't append alias file!");
 			}
 		}
 		
 		if (!Storage.get(cfg.aliases()).getKeys(false).contains("alias-flag")) {
-			YamlConfiguration c = Storage.get(cfg.config());
+			YamlConfiguration c = Storage.get(cfg.claims());
 			List<String> tereny = c.getStringList("Terrains");
 			
 			for (int i = 0; i < tereny.size(); i++) {
@@ -433,7 +438,8 @@ public class Functions {
 			
 			try {
 			    Files.write(Paths.get(cfg.aliases()), "alias-flag: \"\"\n".getBytes(), StandardOpenOption.APPEND);
-			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 1 key.");
+			    Files.write(Paths.get(cfg.aliases()), "alias-validate: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 2 keys (flag and validate).");
 			}catch (IOException e) {
 			    System.out.println("[TerrainClaim] Can't append alias file!");
 			}
@@ -443,8 +449,8 @@ public class Functions {
 		//TODO: Kick subcommand
 	}
 	
-	protected static void ProcessClaims() {
-		YamlConfiguration c = Storage.get(cfg.config());
+	static void ProcessClaims() {
+		YamlConfiguration c = Storage.get(cfg.claims());
 		List<String> tereny = c.getStringList("Terrains");
 		System.out.println("[TerrainClaim] Performing claims validation...");
 		YamlConfiguration aflags = Storage.get(cfg.flags());
@@ -456,11 +462,14 @@ public class Functions {
 			System.out.println("[TerrainClaim] Validating claim " + sp[0] + "/" + sp[1] + "," + sp[2]);
 			YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
 			List<String> flags = tconfig.getStringList("Flags");
+			Set<String> toremove = new HashSet<String>();
 			for (String flag : flags) {
-				if ((flag.startsWith("+") && aflags.getBoolean(flag.substring(1) + "-default") == true) || flag.startsWith("-") && aflags.getBoolean(flag.substring(1) + "-default") == false) flags.remove(flag);
-				if (aflags.getString(flag.substring(1) + "-perm").equalsIgnoreCase("D")) flags.remove(flag);
+				if ((flag.startsWith("+") && aflags.getBoolean(flag.substring(1) + "-default") == true) || flag.startsWith("-") && aflags.getBoolean(flag.substring(1) + "-default") == false) toremove.add(flag);
+				else if (aflags.getString(flag.substring(1) + "-perm").equalsIgnoreCase("D")) toremove.add(flag);
 			}
+			flags.removeAll(toremove);
 			flags.sort(new FlagComparator());
+			tconfig.set("Flags", flags);
 			Storage.save("plugins/TerrainClaim/claims/" + sp[0] + "/" + sp[1] + "," + sp[2] + ".yml", tconfig);
 			
 			try {
@@ -570,10 +579,12 @@ public class Functions {
 		p.sendMessage(Main.lang("flag-help-class-B"));
 		p.sendMessage(Main.lang("flag-help-class-C"));
 		p.sendMessage(Main.lang("flag-help-class-D"));
+		p.sendMessage(Main.lang("flag-help-ast"));
 		p.sendMessage("");
 		
 		for (String flag : aflags) {
 			if (flag.endsWith("-desc")) {
+				flag = flag.replace("-desc", "");
 				if (flags.contains("+" + flag)) PrintFlag(p, flag, flg, true, true, false);
 				else if (flags.contains("-" + flag)) PrintFlag(p, flag, flg, false, true, false);
 				else if (flags.contains("!" + flag)) PrintFlag(p, flag, flg, false, true, true);
@@ -586,6 +597,7 @@ public class Functions {
 	
 	public static void PrintFlag(Player p, String flag, YamlConfiguration flags, Boolean value, Boolean isSet, Boolean forced) {
 		String msg;
+		flag = flag.replace("-desc", "");
 		Boolean permitted = false;
 		String perm = flags.getString(flag + "-perm");
 		
@@ -609,8 +621,8 @@ public class Functions {
 		else if (perm.equalsIgnoreCase("D")) msg += ChatColor.WHITE + "" + ChatColor.STRIKETHROUGH;
 		
 		new FancyMessage(ChatColor.DARK_GRAY + "- ")
-        .then(msg + " " + flag + (permitted?"":(ChatColor.RED + "*")) + ChatColor.GRAY + " (" + flags.getString(flag + "-desc") + ")")
-        .command(forced?(isSet?("/tr flag !" + flag):("/tr flag @" + flag)):(isSet?("/tr flag -" + flag):("/tr flag +" + flag)))
+        .then(msg + " " + flag + (permitted?"":(ChatColor.RED + "*")) + ChatColor.WHITE + " (" + flags.getString(flag + "-desc") + ")")
+        .command(forced?(value?("/tr flag !" + flag):("/tr flag @" + flag)):(value?("/tr flag -" + flag):("/tr flag +" + flag)))
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
         .send(p);
 	}
