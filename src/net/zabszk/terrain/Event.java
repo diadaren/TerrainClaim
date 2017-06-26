@@ -26,6 +26,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -45,7 +47,7 @@ public class Event  implements Listener
 	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onPlace (BlockPlaceEvent e) {
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId())) {
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Functions.HasActiveFlag(e.getBlock().getChunk(), "build-anywhere") && !Storage.get(cfg.protection()).getList("AnyoneCanPlace").contains(e.getBlock().getTypeId())) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
@@ -54,7 +56,7 @@ public class Event  implements Listener
 	@SuppressWarnings("deprecation")
 	@EventHandler (priority = EventPriority.MONITOR)
 	public void onBreak (BlockBreakEvent e) {
-		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId())) {
+		if (!Main.permitted(e.getBlock().getChunk(), e.getPlayer(), 1, true) && !Functions.HasActiveFlag(e.getBlock().getChunk(), "build-anywhere") && !Storage.get(cfg.protection()).getList("AnyoneCanBreak").contains(e.getBlock().getTypeId())) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		} else {
@@ -80,7 +82,7 @@ public class Event  implements Listener
 		String command = e.getMessage().contains(" ")?e.getMessage().substring(0, e.getMessage().indexOf(" ")):e.getMessage();
 		command = command.replace("/", "");
 		
-		if (Main.CommandBlacklist.contains(command)) {
+		if (Main.CommandBlacklist.contains(command) && !Functions.HasActiveFlag(e.getPlayer().getLocation().getChunk(), "blacklisted-commands-anyone")) {
 			if (!Main.permitted(e.getPlayer().getLocation().getChunk(), e.getPlayer(), 0, true)) {
 				e.setCancelled(true);
 				if (!Main.config.getBoolean("SuppressCommandDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
@@ -90,17 +92,17 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.HIGH)
     public void onEntityExplode(EntityExplodeEvent e) {
-        if (e.getEntity() instanceof Creeper && !Main.config.getBoolean("Enable-Creeper")) {
-        	Chunk ch = e.getEntity().getLocation().getChunk();
-    		File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-    		
-    		if (tconf.exists()) e.setCancelled(true);
-        }
+		Chunk ch = e.getEntity().getLocation().getChunk();
+		File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+		if (tconf.exists()) {
+	        if ((e.getEntity() instanceof Creeper && !Main.config.getBoolean("Enable-Creeper") && !Functions.HasActiveFlag(ch, "allow-creeper")) || Functions.HasActiveFlag(ch, "deny-creeper")) e.setCancelled(true);
+	        else if (!Functions.HasActiveFlag(ch, "explosions")) e.setCancelled(true);
+		}
     }
 	
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onBucketFill (PlayerBucketFillEvent e) {	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true)) {
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true) && !Functions.HasActiveFlag(e.getPlayer().getLocation().getChunk(), "build-anywhere")) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
@@ -108,7 +110,7 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onBucketEmpty (PlayerBucketEmptyEvent e) {	
-		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true)) {
+		if (!Main.permitted(e.getBlockClicked().getChunk(), e.getPlayer(), 1, true) && !Functions.HasActiveFlag(e.getPlayer().getLocation().getChunk(), "build-anywhere")) {
 			if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 			e.setCancelled(true);
 		}
@@ -141,18 +143,16 @@ public class Event  implements Listener
 	public void onEntityDamage(EntityDamageByEntityEvent e) {
 		Chunk ch = e.getEntity().getLocation().getChunk();
 		File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-		
 		if (tconf.exists()) {
 		    if (e.getDamager() instanceof Player) {
 		    	if (e.getEntity() instanceof Player) {
-		    		if (!Main.config.getBoolean("Enable-PvP")) {
-				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true)) {
+		    		if ((!Main.config.getBoolean("Enable-PvP") && !Functions.HasActiveFlag(ch, "allow-pvp")) || Functions.HasActiveFlag(ch, "deny-pvp")) {
+				    	if (!Main.config.getBoolean("AddedVsNonadded") || !Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) || Functions.HasActiveFlag(ch, "deny-pvp")) {
 				    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 							e.setCancelled(true);
 				    	}
 		    		}
-		    	}
-		    	else if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) && !Main.config.getBoolean("AnyoneCanAttackMobs")) {
+		    	} else if (!Main.permitted(e.getEntity().getLocation().getChunk(), (Player) e.getDamager(), 1, true) && !Main.config.getBoolean("AnyoneCanAttackMobs")) {
 		    		if (!Main.config.getBoolean("SuppressDenyMessages")) ((Player) e.getDamager()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 					e.setCancelled(true);
 			    }
@@ -170,7 +170,6 @@ public class Event  implements Listener
 			if (e.getPlayer().getItemInHand().getType() == Material.getMaterial(Main.config.getString("TerrainBlock"))) {
 				ItemStack i = e.getPlayer().getItemInHand();
 				ItemStack b = Functions.getTerrainBlock();
-				
 				ItemMeta im = i.getItemMeta();
 				ItemMeta bm = b.getItemMeta();
 				
@@ -194,7 +193,6 @@ public class Event  implements Listener
 											}
 											
 											FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-											
 											Location l = e.getClickedBlock().getLocation().add(0, 1, 0);
 											
 											tconfig.set("Name", e.getPlayer().getWorld().getName() + "," + ch.getX() + "," + ch.getZ());
@@ -318,19 +316,37 @@ public class Event  implements Listener
 			}
 		}
 		
-		try {
-			if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId())) {
-				if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true)) {
-					if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
-					e.setCancelled(true);
-				} else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-					if (!Main.permitted(e.getClickedBlock().getChunk(), e.getPlayer(), 0, true)) {
-						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
+		Chunk cha = e.getClickedBlock().getLocation().getChunk();
+		if (!Functions.HasActiveFlag(cha, "use-anywhere")) {
+			try {
+				if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId())) {
+					if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true)) {
+						Boolean allow = false;
+						if (Functions.HasActiveFlag(cha, "door-anywhere") && (e.getClickedBlock().getTypeId() == 96 || e.getClickedBlock().getTypeId() == 324 || e.getClickedBlock().getTypeId() == 427 || e.getClickedBlock().getTypeId() == 428 || e.getClickedBlock().getTypeId() == 429 || e.getClickedBlock().getTypeId() == 430 || e.getClickedBlock().getTypeId() == 431)) allow = true;
+						if (Functions.HasActiveFlag(cha, "switches-anywhere") && (e.getClickedBlock().getTypeId() == 77 || e.getClickedBlock().getTypeId() == 143 || e.getClickedBlock().getTypeId() == 69 || e.getClickedBlock().getTypeId() == 70 || e.getClickedBlock().getTypeId() == 72 || e.getClickedBlock().getTypeId() == 147 || e.getClickedBlock().getTypeId() == 148)) allow = true;
+						if (Functions.HasActiveFlag(cha, "containers-anywhere") && (e.getClickedBlock().getTypeId() == 342 || e.getClickedBlock().getTypeId() == 54 || e.getClickedBlock().getTypeId() == 146 || e.getClickedBlock().getTypeId() == 154 || e.getClickedBlock().getTypeId() == 408 || e.getClickedBlock().getTypeId() == 61 || e.getClickedBlock().getTypeId() == 158 || e.getClickedBlock().getTypeId() == 23 || e.getClickedBlock().getTypeId() == 84)) allow = true;
+						
+						if (!allow) {
+							if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
+							e.setCancelled(true);
+						}
+					}
+				}
+			} catch (Exception ex) {}
+		}
+	}
+	
+	@EventHandler (priority = EventPriority.HIGH)
+	public void onInventoryClick(InventoryClickEvent e) {
+		if (e.getWhoClicked() instanceof Player) {
+			try {
+				if (!Main.permitted(e.getWhoClicked().getLocation().getChunk(), (Player) e.getWhoClicked(), 0, true) && !Functions.HasActiveFlag(e.getWhoClicked().getLocation().getChunk(), "containers-anywhere-modify")) {
+					if (e.getSlotType() == SlotType.CONTAINER || e.getSlotType() == SlotType.FUEL) {
+						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getWhoClicked().sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);
 					}
 				}
-			}
-		}
-		catch (Exception ex) {}
+			} catch (Exception ex) {}
+		} else e.setCancelled(true);
 	}
 }

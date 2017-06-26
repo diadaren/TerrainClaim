@@ -4,6 +4,7 @@
 DO-NOT-CHANGE-lang-ver: 6
 DO-NOT-CHANGE-incomplete: false
 none: "brak"
+action-prohibited: "Ta czynnosc jest zabroniona z powodu flag ustawionych na tym terenie."
 help-nick: "<nick>"
 help-owner: "<wlasciciel>"
 help-nick-optional: "[nick]"

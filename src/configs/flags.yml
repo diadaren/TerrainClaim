@@ -5,10 +5,6 @@ build-anywhere-desc: Guests can build and break blocks
 build-anywhere-default: false
 build-anywhere-perm: A
 
-bucket-anywhere-desc: Guests can use (fill and empty) buckets
-bucket-anywhere-default: false
-bucket-anywhere-perm: A
-
 door-anywhere-desc: Guests can use door
 door-anywhere-default: false
 door-anywhere-perm: A
@@ -25,7 +21,7 @@ containers-anywhere-modify-desc: Guests can edit containers
 containers-anywhere-modify-default: false
 containers-anywhere-modify-perm: A
 
-use-anywhere-desc: Guest can use anything except opening and editing containers
+use-anywhere-desc: Guest can use anything
 use-anywhere-default: false
 use-anywhere-perm: A
 

@@ -641,6 +641,14 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.GREEN + "[TerrainClaim] Plugin reloaded. Validaing claims...");
 				Functions.ProcessClaims();
 				sender.sendMessage(ChatColor.GREEN + "[TerrainClaim] Claims validated!");
+			} else if (args[0].equalsIgnoreCase("printdesc")) {
+				if (sender instanceof Player) {
+					List<String> noflagdesc = prefs.getStringList("NoFlagDesc");
+					if (noflagdesc.contains(Functions.GetUUID(((Player) sender)))) noflagdesc.remove(Functions.GetUUID(((Player) sender)));
+					else noflagdesc.add(Functions.GetUUID(((Player) sender)));
+					prefs.set("NoFlagDesc", noflagdesc);
+					Storage.save(cfg.prefs(), prefs);
+				} else sender.sendMessage(format("4", "This command can be executed only from game level."));
 			} else sender.sendMessage(format("4", "Unknown subcommand. Type /terrain to get help."));
 		}
 		return true;

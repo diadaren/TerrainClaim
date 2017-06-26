@@ -4,6 +4,7 @@
 DO-NOT-CHANGE-lang-ver: 6
 DO-NOT-CHANGE-incomplete: true
 none: "none"
+action-prohibited: "This action is prohibited due to claim flags."
 help-nick: "<nom>"
 help-owner: "<propriétaire>"
 help-nick-optional: "[nom]"

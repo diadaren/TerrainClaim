@@ -42,66 +42,73 @@ public class Functions {
 	
 	public static void Add(File tconf, CommandSender sender, String target, String rnk) {
 		target = GetUUID(target);
-		FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-		List<String> members = tconfig.getStringList("Allowed");
-		int rank = -1;
-		int index = -1;
-		for (int i = 0; i < members.size(); i++) {
-			if (rank == -1) {
-				String[] member = members.get(i).split(",");
-				if (member[0].equalsIgnoreCase(target)) {
-					index = i;
-					rank = Integer.valueOf(member[1]);
+		YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+		if (HasActiveFlag(tconfig, "prohibit-members-modify") && Main.Perm("prohibitbypass.members-modify", sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("action-prohibited")));
+		else {
+			List<String> members = tconfig.getStringList("Allowed");
+			int rank = -1;
+			int index = -1;
+			for (int i = 0; i < members.size(); i++) {
+				if (rank == -1) {
+					String[] member = members.get(i).split(",");
+					if (member[0].equalsIgnoreCase(target)) {
+						index = i;
+						rank = Integer.valueOf(member[1]);
+					}
 				}
 			}
-		}
-		if (rank > -1) {
-			if (Integer.toString(rank).equals(rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"))) {
-				sender.sendMessage(Main.format("e", Main.lang("add-fail-added").replace("%claim", tconfig.getString("Name"))));
+			if (rank > -1) {
+				if (Integer.toString(rank).equals(rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"))) {
+					sender.sendMessage(Main.format("e", Main.lang("add-fail-added").replace("%claim", tconfig.getString("Name"))));
+				} else {
+					members.set(index, target + "," + rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"));
+					tconfig.set("Allowed", members);
+					try {
+						tconfig.save(tconf);
+					} catch (IOException ex) {
+						System.out.println("[TerrainClaim] Config file saving error.");
+					}
+					sender.sendMessage(Main.format("3", Main.lang("add-changed").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
+				}
 			} else {
-				members.set(index, target + "," + rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"));
+				members.add(target + "," + rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"));
 				tconfig.set("Allowed", members);
 				try {
 					tconfig.save(tconf);
 				} catch (IOException ex) {
 					System.out.println("[TerrainClaim] Config file saving error.");
 				}
-				sender.sendMessage(Main.format("3", Main.lang("add-changed").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
+				sender.sendMessage(Main.format("3", Main.lang("add-added").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
 			}
-		} else {
-			members.add(target + "," + rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"));
-			tconfig.set("Allowed", members);
-			try {
-				tconfig.save(tconf);
-			} catch (IOException ex) {
-				System.out.println("[TerrainClaim] Config file saving error.");
-			}
-			sender.sendMessage(Main.format("3", Main.lang("add-added").replace("%nick", GetNickname(target)).replace("%claim", tconfig.getString("Name"))));
 		}
 	}
 	
 	public static void Remove(File tconf, CommandSender sender, String target) {
-		FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-		List<String> members = tconfig.getStringList("Allowed");
-		int id = -1;
-		
-		for (int i = 0; i < members.size(); i++) {
-			if (id == -1) {
-				String[] member = members.get(i).split(",");
-				if (member[0].equalsIgnoreCase(GetUUID(target)) || member[0].equalsIgnoreCase(target)) id = i;
-			}
-		}
-		
-		if (id == -1) sender.sendMessage(Main.format("e", Main.lang("rm-fail-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+		YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+		if (HasActiveFlag(tconfig, "prohibit-members-modify") && Main.Perm("prohibitbypass.members-modify", sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("action-prohibited")));
 		else {
-			members.remove(id);
-			tconfig.set("Allowed", members);
-			try {
-				tconfig.save(tconf);
-			} catch (IOException ex) {
-				System.out.println("[TerrainClaim] Config file saving error.");
+			target = GetUUID(target);
+			List<String> members = tconfig.getStringList("Allowed");
+			int id = -1;
+			
+			for (int i = 0; i < members.size(); i++) {
+				if (id == -1) {
+					String[] member = members.get(i).split(",");
+					if (member[0].equalsIgnoreCase(target)) id = i;
+				}
 			}
-			sender.sendMessage(Main.format("3", Main.lang("rm-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			
+			if (id == -1) sender.sendMessage(Main.format("e", Main.lang("rm-fail-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			else {
+				members.remove(id);
+				tconfig.set("Allowed", members);
+				try {
+					tconfig.save(tconf);
+				} catch (IOException ex) {
+					System.out.println("[TerrainClaim] Config file saving error.");
+				}
+				sender.sendMessage(Main.format("3", Main.lang("rm-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			}
 		}
 	}
 	
@@ -113,29 +120,29 @@ public class Functions {
 		else if (validatePermissions && Main.flags.getString(set.substring(1) + "-perm").equalsIgnoreCase("B") && !Main.Perm("restricted.flag." + set.substring(1), sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-B")));
 		else if (validatePermissions && !Main.Perm("flag", sender, true, true)) sender.sendMessage(Main.format("c", Main.lang("flag-perm-class-A")));
 		else {
-			FileConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
-			YamlConfiguration flconfig = Storage.get(cfg.flags());
-			List<String> flags = tconfig.getStringList("Flags");
-			int id = -1;
-			
-			for (int i = 0; i < flags.size(); i++) {
-				if (id == -1) {
-					String[] flag = flags.get(i).split(",");
-					if (flag[0].substring(1).equalsIgnoreCase(set.substring(1))) id = i;
-				}
-			}
-			
-			if (id == -1) flags.add(set);
+			YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+			if (HasActiveFlag(tconfig, "prohibit-flags-modify") && Main.Perm("prohibitbypass.flags-modify", sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("action-prohibited")));
 			else {
-				if (set.startsWith("-") && flconfig.getBoolean(set.substring(1) + "-default") == false) flags.remove(id);
-				else if (set.startsWith("+") && flconfig.getBoolean(set.substring(1) + "-default") == true) flags.remove(id);
-				else flags.set(id, set);
+				YamlConfiguration flconfig = Storage.get(cfg.flags());
+				List<String> flags = tconfig.getStringList("Flags");
+				int id = -1;
+				for (int i = 0; i < flags.size(); i++) {
+					if (id == -1) {
+						String[] flag = flags.get(i).split(",");
+						if (flag[0].substring(1).equalsIgnoreCase(set.substring(1))) id = i;
+					}
+				}
+				if (id == -1) flags.add(set);
+				else {
+					if (set.startsWith("-") && flconfig.getBoolean(set.substring(1) + "-default") == false) flags.remove(id);
+					else if (set.startsWith("+") && flconfig.getBoolean(set.substring(1) + "-default") == true) flags.remove(id);
+					else flags.set(id, set);
+				}
+				flags.sort(new FlagComparator());
+				tconfig.set("Flags", flags);
+				try { tconfig.save(tconf); } catch (Exception e) { System.out.println("Can't save claim file!"); }
+				sender.sendMessage(Main.format("3", Main.lang("flag-set").replace("%flag", set).replace("%claim", tconfig.getString("Name"))));
 			}
-			flags.sort(new FlagComparator());
-			tconfig.set("Flags", flags);
-			try { tconfig.save(tconf); } catch (Exception e) { System.out.println("Can't save claim file!"); }
-			
-			sender.sendMessage(Main.format("3", Main.lang("flag-set").replace("%flag", set).replace("%claim", tconfig.getString("Name"))));
 		}
 	}
 	
@@ -183,7 +190,17 @@ public class Functions {
 	
 	public static boolean HasActiveFlag (Chunk ch, String flag) {
 		if (Main.flags.getString(flag + "-perm").equalsIgnoreCase("D")) return false;
-		YamlConfiguration tconf = Storage.get("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+		if (!(new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml").exists())) {
+			YamlConfiguration tconf = Storage.get("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+			List<String> flags = tconf.getStringList("Flags");
+			if (flags.contains("+" + flag) || flags.contains("@" + flag)) return true;
+			if (flags.contains("-" + flag) || flags.contains("!" + flag)) return false;
+			return Main.flags.getBoolean(flag + "-default");
+		} else return false;
+	}
+	
+	public static boolean HasActiveFlag (YamlConfiguration tconf, String flag) {
+		if (Main.flags.getString(flag + "-perm").equalsIgnoreCase("D")) return false;
 		List<String> flags = tconf.getStringList("Flags");
 		if (flags.contains("+" + flag) || flags.contains("@" + flag)) return true;
 		if (flags.contains("-" + flag) || flags.contains("!" + flag)) return false;
@@ -449,7 +466,7 @@ public class Functions {
 		//TODO: Kick subcommand
 	}
 	
-	static void ProcessClaims() {
+	public static void ProcessClaims() {
 		YamlConfiguration c = Storage.get(cfg.claims());
 		List<String> tereny = c.getStringList("Terrains");
 		System.out.println("[TerrainClaim] Performing claims validation...");
@@ -583,7 +600,7 @@ public class Functions {
 		p.sendMessage(Main.lang("flag-help-ast"));
 		new FancyMessage("")
         .then(Main.lang("flag-printing-desc") + (printdesc?Main.lang("flag-enabled"):Main.lang("flag-disabled")))
-        .command(printdesc?"/tr printdesc off":"/tr printdesc on") //TODO: /tr printdesc command
+        .command("/tr printdesc")
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
         .send(p);
 		p.sendMessage("");
