@@ -1,5 +1,6 @@
 #Default: true of false - the default state of flag
 #Permissions: who can change the flag: A - anyone (player permissions required), B - permissions required (like VIP), C - admin permissions required, D - flag disabled
+#If you are plugin developer and you want to use API of my plugin, you can create own flag - just define here three values: desc, default and perm. My plugin will find it :).
 
 build-anywhere-desc: Guests can build and break blocks
 build-anywhere-default: false

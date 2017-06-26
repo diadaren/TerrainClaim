@@ -24,6 +24,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -325,7 +327,6 @@ public class Event  implements Listener
 						if (Functions.HasActiveFlag(cha, "door-anywhere") && (e.getClickedBlock().getTypeId() == 96 || e.getClickedBlock().getTypeId() == 324 || e.getClickedBlock().getTypeId() == 427 || e.getClickedBlock().getTypeId() == 428 || e.getClickedBlock().getTypeId() == 429 || e.getClickedBlock().getTypeId() == 430 || e.getClickedBlock().getTypeId() == 431)) allow = true;
 						if (Functions.HasActiveFlag(cha, "switches-anywhere") && (e.getClickedBlock().getTypeId() == 77 || e.getClickedBlock().getTypeId() == 143 || e.getClickedBlock().getTypeId() == 69 || e.getClickedBlock().getTypeId() == 70 || e.getClickedBlock().getTypeId() == 72 || e.getClickedBlock().getTypeId() == 147 || e.getClickedBlock().getTypeId() == 148)) allow = true;
 						if (Functions.HasActiveFlag(cha, "containers-anywhere") && (e.getClickedBlock().getTypeId() == 342 || e.getClickedBlock().getTypeId() == 54 || e.getClickedBlock().getTypeId() == 146 || e.getClickedBlock().getTypeId() == 154 || e.getClickedBlock().getTypeId() == 408 || e.getClickedBlock().getTypeId() == 61 || e.getClickedBlock().getTypeId() == 158 || e.getClickedBlock().getTypeId() == 23 || e.getClickedBlock().getTypeId() == 84)) allow = true;
-						
 						if (!allow) {
 							if (!Main.config.getBoolean("SuppressDenyMessages")) e.getPlayer().sendMessage(Main.format("4", Main.lang("action-blocked")));
 							e.setCancelled(true);
@@ -348,5 +349,18 @@ public class Event  implements Listener
 				}
 			} catch (Exception ex) {}
 		} else e.setCancelled(true);
+	}
+	
+	@EventHandler (priority = EventPriority.HIGH)
+	public void onCreatureSpawn(CreatureSpawnEvent e) {
+		if (e.getSpawnReason() == SpawnReason.NATURAL || e.getSpawnReason() == SpawnReason.BUILD_WITHER || e.getSpawnReason() == SpawnReason.SILVERFISH_BLOCK || e.getSpawnReason() == SpawnReason.INFECTION || e.getSpawnReason() == SpawnReason.VILLAGE_INVASION || e.getSpawnReason() == SpawnReason.ENDER_PEARL || e.getSpawnReason() == SpawnReason.NETHER_PORTAL || e.getSpawnReason() == SpawnReason.JOCKEY || e.getSpawnReason() == SpawnReason.BUILD_SNOWMAN) {
+			Chunk ch = e.getLocation().getChunk();
+			File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+			if (tconf.exists()) {
+				if (e.getSpawnReason() == SpawnReason.NATURAL) {
+					if (!Functions.HasActiveFlag(ch, "mob-spawning")) e.setCancelled(true);
+				} else e.setCancelled(true);
+			}
+		}
 	}
 }

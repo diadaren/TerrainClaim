@@ -827,17 +827,15 @@ public class Main extends JavaPlugin {
 		else return subcommand;
 	}
 	
-	static String ColorizeVersionName(String version, ChatColor color) {
+	public static String ColorizeVersionName(String version, ChatColor color) {
 		version = version.replace("ALPHA", ChatColor.RED + "ALPHA" + color);
 		version = version.replace("BETA", ChatColor.AQUA + "BETA" + color);
 		version = version.replace("DEV", ChatColor.GREEN + "DEV" + color);
-		
 		return version;
 	}
 	
 	public static boolean CheckWorld(World world) {
 		FileConfiguration wconf = Storage.get(cfg.worlds());
-		
 		return ((!wconf.getBoolean("UseBlacklist") || !wconf.getStringList("BlacklistedWorlds").contains(world.getName())) && (!wconf.getBoolean("UseWhitelist") || wconf.getStringList("WhitelistedWorlds").contains(world.getName())));
 	}
 }
