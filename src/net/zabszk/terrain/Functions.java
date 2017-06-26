@@ -572,6 +572,7 @@ public class Functions {
 	public static void PrintFlags(Player p, List<String> flags) {
 		YamlConfiguration flg = Storage.get(cfg.flags());
 		Set<String> aflags = flg.getKeys(false);
+		Boolean printdesc = !Main.prefs.getStringList("NoFlagDesc").contains(GetUUID(p));
 		
 		p.sendMessage("");
 		p.sendMessage(Main.lang("flag-help-header"));
@@ -580,22 +581,27 @@ public class Functions {
 		p.sendMessage(Main.lang("flag-help-class-C"));
 		p.sendMessage(Main.lang("flag-help-class-D"));
 		p.sendMessage(Main.lang("flag-help-ast"));
+		new FancyMessage("")
+        .then(Main.lang("flag-printing-desc") + (printdesc?Main.lang("flag-enabled"):Main.lang("flag-disabled")))
+        .command(printdesc?"/tr printdesc off":"/tr printdesc on") //TODO: /tr printdesc command
+        .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
+        .send(p);
 		p.sendMessage("");
 		
 		for (String flag : aflags) {
 			if (flag.endsWith("-desc")) {
 				flag = flag.replace("-desc", "");
-				if (flags.contains("+" + flag)) PrintFlag(p, flag, flg, true, true, false);
-				else if (flags.contains("-" + flag)) PrintFlag(p, flag, flg, false, true, false);
-				else if (flags.contains("!" + flag)) PrintFlag(p, flag, flg, false, true, true);
-				else if (flags.contains("@" + flag)) PrintFlag(p, flag, flg, true, true, true);
-				else PrintFlag(p, flag, flg, flg.getBoolean(flag.replace("-desc", "") + "-default"), false, false);
+				if (flags.contains("+" + flag)) PrintFlag(p, flag, flg, true, true, false, printdesc);
+				else if (flags.contains("-" + flag)) PrintFlag(p, flag, flg, false, true, false, printdesc);
+				else if (flags.contains("!" + flag)) PrintFlag(p, flag, flg, false, true, true, printdesc);
+				else if (flags.contains("@" + flag)) PrintFlag(p, flag, flg, true, true, true, printdesc);
+				else PrintFlag(p, flag, flg, flg.getBoolean(flag.replace("-desc", "") + "-default"), false, false, printdesc);
 			}
 		}
 		p.sendMessage("");
 	}
 	
-	public static void PrintFlag(Player p, String flag, YamlConfiguration flags, Boolean value, Boolean isSet, Boolean forced) {
+	public static void PrintFlag(Player p, String flag, YamlConfiguration flags, Boolean value, Boolean isSet, Boolean forced, Boolean printdesc) {
 		String msg;
 		flag = flag.replace("-desc", "");
 		Boolean permitted = false;
@@ -621,7 +627,7 @@ public class Functions {
 		else if (perm.equalsIgnoreCase("D")) msg += ChatColor.WHITE + "" + ChatColor.STRIKETHROUGH;
 		
 		new FancyMessage(ChatColor.DARK_GRAY + "- ")
-        .then(msg + " " + flag + (permitted?"":(ChatColor.RED + "*")) + ChatColor.WHITE + " (" + flags.getString(flag + "-desc") + ")")
+        .then(msg + " " + flag + (permitted?"":(ChatColor.RED + "*")) + (printdesc?(ChatColor.WHITE + " (" + flags.getString(flag + "-desc") + ")"):""))
         .command(forced?(value?("/tr flag !" + flag):("/tr flag @" + flag)):(value?("/tr flag -" + flag):("/tr flag +" + flag)))
         .tooltip(ChatColor.translateAlternateColorCodes('&', Main.lang("flag-menu-tooltip")))
         .send(p);
@@ -633,6 +639,16 @@ public class Functions {
 			OfflinePlayer p = Bukkit.getOfflinePlayer(nick);
 			CacheUUID(p.getUniqueId().toString(), nick);
 			return p.getUniqueId().toString();
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static String GetUUID(Player target) {
+		try {
+			CacheUUID(target.getUniqueId().toString(), target.getName());
+			return target.getUniqueId().toString();
 		}
 		catch (Exception e) {
 			return null;

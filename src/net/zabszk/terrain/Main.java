@@ -31,16 +31,14 @@ import org.bukkit.World;
 public class Main extends JavaPlugin {
 	public static Plugin plugin;
 	private static Main instance;
-	
-	private static File langfile;
-	protected static YamlConfiguration langconf;
-	
 	private static Event event;
 	
 	public static File configfile;
-	public static YamlConfiguration config;
 	
+	public static YamlConfiguration config;
+	protected static YamlConfiguration langconf;
 	public static YamlConfiguration flags;
+	public static YamlConfiguration prefs;
 	
 	public static final int LangVersion = 6;
 	
@@ -717,6 +715,7 @@ public class Main extends JavaPlugin {
 		Functions.GenerateConfig("claims");
 		Functions.GenerateConfig("aliases");
 		Functions.GenerateConfig("flags");
+		Functions.GenerateConfig("prefs");
 		Functions.GenerateConfig("protection");
 		Functions.GenerateConfig("experimental");
 		Functions.MigrateConfig();
@@ -740,11 +739,9 @@ public class Main extends JavaPlugin {
 		
 		configfile = new File(cfg.config());
 		config = YamlConfiguration.loadConfiguration(configfile);
-		
-		langfile = new File("plugins/TerrainClaim/lang/" + config.getString("Lang") + ".yml");
-		langconf = YamlConfiguration.loadConfiguration(langfile);
-		
+		langconf = Storage.get("plugins/TerrainClaim/lang/" + config.getString("Lang") + ".yml");
 		flags = Storage.get(cfg.flags());
+		prefs = Storage.get(cfg.prefs());
 	}
 	
 	public static WorldGuardPlugin getWorldGuard() {

@@ -110,4 +110,4 @@ flag-help-class-B: "&eClass B - you can change them if you have special permissi
 flag-help-class-C: "&6Class C - changeable only by server administrator"
 flag-help-class-D: "&f&mClass D - disabled by administrator, can't be changed by anyone"
 flag-help-ast: "&c* &7- you can't change this flag"
-
+flag-printing-desc: "&8Printing flags description: "

@@ -21,6 +21,11 @@ public class cfg {
 		return "plugins/TerrainClaim/flags.yml";
 	}
 	
+	public static String prefs()
+	{
+		return "plugins/TerrainClaim/prefs.yml";
+	}
+	
 	public static String experimental()
 	{
 		return "plugins/TerrainClaim/experimental.yml";

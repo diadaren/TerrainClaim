@@ -110,3 +110,4 @@ flag-help-class-B: "&eKlasa B - mozesz ja zmieniac, jezeli masz odpowiednie upra
 flag-help-class-C: "&6Klasa C - moze ja zmieniac tylko administrator serwera"
 flag-help-class-D: "&f&mKlasa D - wylaczona przez administratora, nikt nie moze jej zmieniac"
 flag-help-ast: "&c* &7- nie mozesz zmieniac tej flagi"
+flag-printing-desc: "&8Pokazywanie opisu flag: "
