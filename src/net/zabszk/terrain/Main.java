@@ -15,7 +15,9 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -96,7 +98,6 @@ public class Main extends JavaPlugin {
 			sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("manage") + " " + lang("help-nick"));
 			if (admin || sender.hasPermission("terrain.flag.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag") + ChatColor.DARK_RED + " [-a | r]");
 			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("flag") + " " + lang("help-flag") + " [-a]");
-			
 			if (config.getBoolean("AllowCommandClaiming")) {
 				sender.sendMessage("");
 				sender.sendMessage(lang("claim-command-max").replace("%limit", Integer.toString(config.getInt("CommandClaimsLimit"))).replace("-1", lang("help-unlimited")));
@@ -106,6 +107,8 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("settp"));
 			}
+			if (admin || sender.hasPermission("terrain.transfer.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name" + ChatColor.DARK_RED + " [-a | r] [-o]"));
+			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name" + " [-a]"));
 			
 			if (admin) sender.sendMessage("");
 			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
@@ -432,23 +435,19 @@ public class Main extends JavaPlugin {
 							if (tconfig.getString("Method").equalsIgnoreCase("C")) {
 								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
 								String del = "";
-								
 								for (String t : tereny) {
 									String[] s = t.split(";");
 									if (s[0].equalsIgnoreCase(((Player) sender).getWorld().getName()) && s[1].equals(Integer.toString(ch.getX())) && s[2].equals(Integer.toString(ch.getZ()))) del = t;
 								}
-								
 								if (!del.equals("")) tereny.remove(del);
 								Storage.setclaims(tereny);
 								tconf.delete();
-								
 								try {
 									if (Storage.get(cfg.experimental()).getBoolean("PlaySound")) ((Player) sender).getWorld().playSound(l, Sound.ENTITY_GENERIC_EXPLODE, 1, 0);
 								} catch (Exception ex) {
 									ex.printStackTrace();
 									System.out.println(ChatColor.RED + "Disable PlaySound in experimental config!!!");
 								}
-								
 								try {
 									if (Storage.get(cfg.experimental()).getBoolean("PlayEffect")) {
 										for (int a = 0; a < 500; a++) {
@@ -459,7 +458,6 @@ public class Main extends JavaPlugin {
 									ex.printStackTrace();
 									System.out.println(ChatColor.RED + "Disable PlayEffect in experimental config!!!");
 								}
-								
 								sender.sendMessage(Main.format("b", Main.lang("claim-unclaimed")));
 							} else sender.sendMessage(Main.format("4", Main.lang("unclaim-use-block")));
 						} else sender.sendMessage(Main.format("4", Main.lang("not-owner")));
@@ -588,7 +586,6 @@ public class Main extends JavaPlugin {
 				if (sender instanceof Player) {
 					if (args.length == 1) {
 						Chunk ch = ((Player) sender).getLocation().getChunk();
-						
 						File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 						if (!tconf.exists()) sender.sendMessage(format("4", lang("info-not-claimed")));
 						else {
@@ -598,11 +595,9 @@ public class Main extends JavaPlugin {
 					} else if (Perm("flag", sender, true, true)) {
 						if (args.length == 4 && args[3].equalsIgnoreCase("-a") && Perm("flag.recursive", sender, true, true)) {
 							List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-							
 							for (int i = 0; i < tereny.size(); i++) {
 								if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString())) {
 									String[] split = tereny.get(i).split(";");
-									
 									File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
 									Functions.SetFlag(tconf, sender, args[1], true);
 								}
@@ -614,11 +609,9 @@ public class Main extends JavaPlugin {
 								File thconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 								YamlConfiguration tc = YamlConfiguration.loadConfiguration(thconf);
 								String uuid = tc.getString("Owner");
-								
 								for (int i = 0; i < tereny.size(); i++) {
 									if (tereny.get(i).split(";")[3].equalsIgnoreCase(uuid)) {
 										String[] split = tereny.get(i).split(";");
-										
 										File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
 										Functions.SetFlag(tconf, sender, args[1], true);
 									}
@@ -626,7 +619,6 @@ public class Main extends JavaPlugin {
 							}
 						} else {
 							Chunk ch = ((Player) sender).getLocation().getChunk();
-							
 							if (permitted(ch, (Player) sender, 2, false) || Perm("flag.others", sender, false, true)) {
 								File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 								if (tconf.exists()) Functions.SetFlag(tconf, sender, args[1], true);
@@ -649,6 +641,52 @@ public class Main extends JavaPlugin {
 					prefs.set("NoFlagDesc", noflagdesc);
 					Storage.save(cfg.prefs(), prefs);
 				} else sender.sendMessage(format("4", "This command can be executed only from game level."));
+			} else if (args[0].equalsIgnoreCase("transfer")) {
+				if (args.length < 2 || args.length > 4) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name") + " [-a]"));
+				else {
+					if (sender instanceof Player) {
+						Set<String> ags = new HashSet<String>(Arrays.asList(args)); 
+						if ((ags.contains("-o") && Perm("transfer.override", sender, false, true)) || (Bukkit.getOfflinePlayer(args[1]).isOnline() && Bukkit.getPlayer(args[1]).getLocation().getChunk().equals(((Player) sender).getLocation().getChunk()))) {
+							if (args.length > 2 && args[2].equalsIgnoreCase("-a") && Perm("transfer.recursive", sender, true, true)) {
+								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+								for (int i = 0; i < tereny.size(); i++) {
+									if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString())) {
+										String[] split = tereny.get(i).split(";");
+										File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
+										Functions.Transfer(tconf, sender, args[1]);
+									}
+								}
+							}
+							else if (args.length > 2 && ags.contains("-r")) {
+								if (Perm("transfer.others.recursive", sender, false, true)) {
+									List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+									Chunk ch = ((Player) sender).getLocation().getChunk();
+									File thconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+									YamlConfiguration tc = YamlConfiguration.loadConfiguration(thconf);
+									String uuid = tc.getString("Owner");
+									for (int i = 0; i < tereny.size(); i++) {
+										if (tereny.get(i).split(";")[3].equalsIgnoreCase(uuid)) {
+											String[] split = tereny.get(i).split(";");
+											File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
+											Functions.Transfer(tconf, sender, args[1]);
+										}
+									}
+								}
+							} else {
+								Chunk ch = ((Player) sender).getLocation().getChunk();
+								if (permitted(ch, (Player) sender, 2, false) || Perm("transfer.others", sender, false, true)) {
+									File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+									if (tconf.exists()) Functions.Transfer(tconf, sender, args[1]);
+									else sender.sendMessage(format("4", lang("transfer-not-claimed")));
+								}
+								else sender.sendMessage(format("4", lang("transfer-not-permitted")));
+							}
+						} else {
+							if (sender.hasPermission("terrain.transfer.override") || sender.hasPermission("terrain.admin")) sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk-admin")));
+							else sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk")));
+						}
+					} else sender.sendMessage(format("4", "This command can be executed only from game level."));
+				}
 			} else sender.sendMessage(format("4", "Unknown subcommand. Type /terrain to get help."));
 		}
 		return true;
@@ -802,7 +840,6 @@ public class Main extends JavaPlugin {
 	
 	public static String IsAlias(String arg) {
 		FileConfiguration file = Storage.get(cfg.aliases());
-		
 		if (file.getString("alias-add").equalsIgnoreCase(arg)) return "add";
 		else if (file.getString("alias-ranks").equalsIgnoreCase(arg)) return "ranks";
 		else if (file.getString("alias-remove").equalsIgnoreCase(arg)) return "remove";
@@ -818,6 +855,7 @@ public class Main extends JavaPlugin {
 		else if (file.getString("alias-dev").equalsIgnoreCase(arg)) return "dev";
 		else if (file.getString("alias-flag").equalsIgnoreCase(arg)) return "flag";
 		else if (file.getString("alias-validate").equalsIgnoreCase(arg)) return "validate";
+		else if (file.getString("alias-transfer").equalsIgnoreCase(arg)) return "transfer";
 		else return "";
 	}
 	

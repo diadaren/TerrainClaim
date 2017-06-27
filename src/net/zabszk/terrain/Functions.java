@@ -72,6 +72,7 @@ public class Functions {
 				}
 			} else {
 				members.add(target + "," + rnk.replace("helper", "0").replace("member", "1").replace("admin", "2"));
+				members.sort(new MembersComparator());
 				tconfig.set("Allowed", members);
 				try {
 					tconfig.save(tconf);
@@ -98,7 +99,9 @@ public class Functions {
 				}
 			}
 			
-			if (id == -1) sender.sendMessage(Main.format("e", Main.lang("rm-fail-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			if (id == -1) {
+				if (sender != null) sender.sendMessage(Main.format("e", Main.lang("rm-fail-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+			}
 			else {
 				members.remove(id);
 				tconfig.set("Allowed", members);
@@ -107,8 +110,38 @@ public class Functions {
 				} catch (IOException ex) {
 					System.out.println("[TerrainClaim] Config file saving error.");
 				}
-				sender.sendMessage(Main.format("3", Main.lang("rm-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
+				if (sender != null) sender.sendMessage(Main.format("3", Main.lang("rm-removed").replace("%nick", target).replace("%claim", tconfig.getString("Name"))));
 			}
+		}
+	}
+	
+	public static void Transfer(File tconf, CommandSender sender, String target) {
+		YamlConfiguration tconfig = YamlConfiguration.loadConfiguration(tconf);
+		if (HasActiveFlag(tconfig, "prohibit-transfer") && Main.Perm("prohibitbypass.transfer", sender, false, true)) sender.sendMessage(Main.format("c", Main.lang("action-prohibited")));
+		else {
+			int count = 0;
+			String uuid = GetUUID(target);
+			List<String> claims = Storage.get(cfg.claims()).getStringList("Terrains");
+			for (int i = 0; i < claims.size(); i++) {
+				if (claims.get(i).split(";")[3].equalsIgnoreCase(uuid) && claims.get(i).split(";")[5].equalsIgnoreCase("C")) count++;
+			}
+			if (!tconfig.getString("Method").equalsIgnoreCase("C") || Main.config.getInt("CommandClaimsLimit") == -1 || count < Main.config.getInt("CommandClaimsLimit")) {
+				String prevown = tconfig.getString("Owner");
+				Remove(tconf, null, target);
+				tconfig.set("Owner", uuid);
+				Storage.save(tconf, tconfig);
+				for (int i = 0; i < claims.size(); i++) {
+					String[] s = claims.get(i).split(";");
+					if (s[0].equalsIgnoreCase(tconfig.getString("world")) && s[1].equals(tconfig.getString("Chunk").split(",")[0]) && s[2].equals(tconfig.getString("Chunk").split(",")[1])) {
+						claims.set(i, claims.get(i).replace(claims.get(i), uuid));
+						Storage.setclaims(claims);
+						sender.sendMessage(Main.format("3", Main.lang("transfer-complete").replace("%name", tconfig.getString("Name").replace("%newowner", target))));
+						Bukkit.getPlayer(target).sendMessage(Main.format("3", Main.lang("transfer-new-owner").replace("%name", tconfig.getString("Name").replace("%prevowner", prevown))));
+						return;
+					}
+				}
+				sender.sendMessage(Main.format("4", Main.lang("transfer-not-found").replace("%name", tconfig.getString("Name"))));
+			} else sender.sendMessage(Main.format("4", Main.lang("transfer-limit")));
 		}
 	}
 	
@@ -173,6 +206,14 @@ public class Functions {
 	        o1 = o1.substring(1);
 	        o2 = o2.substring(1);
 	        return o1.compareToIgnoreCase(o2);
+	    }
+	}
+	
+	public static class MembersComparator implements Comparator<String> {
+	    @Override
+	    public int compare(String o1, String o2) {
+	    	if (o1.split(",")[1].equals(o2.split(",")[1])) return o1.compareToIgnoreCase(o2);
+	    	else return o1.split(",")[1].compareTo(o2.split(",")[2]);
 	    }
 	}
 	
@@ -456,13 +497,13 @@ public class Functions {
 			try {
 			    Files.write(Paths.get(cfg.aliases()), "alias-flag: \"\"\n".getBytes(), StandardOpenOption.APPEND);
 			    Files.write(Paths.get(cfg.aliases()), "alias-validate: \"\"\n".getBytes(), StandardOpenOption.APPEND);
-			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 2 keys (flag and validate).");
+			    Files.write(Paths.get(cfg.aliases()), "alias-transfer: \"\"\n".getBytes(), StandardOpenOption.APPEND);
+			    System.out.println("[TerrainClaim] Updated alias config to newer version - added 3 keys (flag, validate and transfer).");
 			}catch (IOException e) {
 			    System.out.println("[TerrainClaim] Can't append alias file!");
 			}
 		}
-		
-		//TODO: Transfer subcommand
+
 		//TODO: Kick subcommand
 	}
 	
@@ -487,6 +528,9 @@ public class Functions {
 			flags.removeAll(toremove);
 			flags.sort(new FlagComparator());
 			tconfig.set("Flags", flags);
+			List<String> members = tconfig.getStringList("Allowed");
+			members.sort(new MembersComparator());
+			tconfig.set("Allowed", members);
 			Storage.save("plugins/TerrainClaim/claims/" + sp[0] + "/" + sp[1] + "," + sp[2] + ".yml", tconfig);
 			
 			try {

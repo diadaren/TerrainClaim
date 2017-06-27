@@ -44,4 +44,12 @@ public class Storage {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void save(File configfile, YamlConfiguration cfg) {
+		try {
+			cfg.save(configfile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
