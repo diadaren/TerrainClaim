@@ -120,4 +120,4 @@ transfer-new-owner: "You are now owner of claim &b&l%name&3 (previous owner: &b&
 transfer-not-found: "Claim &l%name &4can't be found."
 transfer-limit: "The new owner has exceeded claims limit. Can't transfer ownership."
 transfer-not-claimed: "This chunk is not claimed."
-transfer-not-permitted: "This is not your claim and you aren't administrator of this claim."
+transfer-not-permitted: "This is not your claim."

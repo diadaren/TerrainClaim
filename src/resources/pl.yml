@@ -120,4 +120,4 @@ transfer-new-owner: "Jestes nowym wlascicielem terenu &b&l%name&3 (poprzedni wla
 transfer-not-found: "Teren &l%name &4nie zostal znaleziony."
 transfer-limit: "Nowy wlasciciel osiagnal limit ilosci terenow. Nie mozna przetransferowac."
 transfer-not-claimed: "Ten chunk nie jest chroniony."
-transfer-not-permitted: "Nie jestes wlascicielem, ani administratorem tego terenu."
+transfer-not-permitted: "Nie jestes wlascicielem tego terenu."
