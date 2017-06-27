@@ -12,6 +12,8 @@ import org.mcstats.Metrics;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
+import mkremins.fanciful.FancyMessage;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -45,9 +47,11 @@ public class Main extends JavaPlugin {
 	public static final int LangVersion = 6;
 	
 	public static Set<String> CommandBlacklist;
+	public static Set<String> AllowTransfer;
 	
 	@Override
 	public void onEnable() {
+		AllowTransfer = new HashSet<String>();
 		plugin = this;
 		instance = this;
 		event = new Event();
@@ -642,50 +646,87 @@ public class Main extends JavaPlugin {
 					Storage.save(cfg.prefs(), prefs);
 				} else sender.sendMessage(format("4", "This command can be executed only from game level."));
 			} else if (args[0].equalsIgnoreCase("transfer")) {
-				if (args.length < 2 || args.length > 4) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name") + " [-a]"));
+				if (args.length < 2 || args.length > 5) sender.sendMessage(format("4", "Syntax: /" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name") + " [-a] [-c]"));
 				else {
 					if (sender instanceof Player) {
-						Set<String> ags = new HashSet<String>(Arrays.asList(args)); 
-						if ((ags.contains("-o") && Perm("transfer.override", sender, false, true)) || (Bukkit.getOfflinePlayer(args[1]).isOnline() && Bukkit.getPlayer(args[1]).getLocation().getChunk().equals(((Player) sender).getLocation().getChunk()))) {
-							if (args.length > 2 && args[2].equalsIgnoreCase("-a") && Perm("transfer.recursive", sender, true, true)) {
-								List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-								for (int i = 0; i < tereny.size(); i++) {
-									if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString())) {
-										String[] split = tereny.get(i).split(";");
-										File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
-										Functions.Transfer(tconf, sender, args[1]);
-									}
-								}
-							}
-							else if (args.length > 2 && ags.contains("-r")) {
-								if (Perm("transfer.others.recursive", sender, false, true)) {
-									List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
-									Chunk ch = ((Player) sender).getLocation().getChunk();
-									File thconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-									YamlConfiguration tc = YamlConfiguration.loadConfiguration(thconf);
-									String uuid = tc.getString("Owner");
-									for (int i = 0; i < tereny.size(); i++) {
-										if (tereny.get(i).split(";")[3].equalsIgnoreCase(uuid)) {
-											String[] split = tereny.get(i).split(";");
-											File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
-											Functions.Transfer(tconf, sender, args[1]);
+						Set<String> ags = new HashSet<String>(Arrays.asList(args));
+						String commands = "/" + label + " ";
+						for (String ag : ags) {
+							commands += ag + " ";
+						}
+						commands += "-c";
+						if (!ags.contains("-c") && !ags.contains("-o")) {
+							sender.sendMessage(lang("transfer-warning"));
+							new FancyMessage(lang("transfer-warning2"))
+					        .then(lang("transfer-warning2-click"))
+					        .command(commands)
+					        .tooltip(Main.lang("transfer-tooltip"))
+					        .send(sender);
+						} else {
+							if ((ags.contains("-o") && Perm("transfer.override", sender, false, true)) || (Bukkit.getOfflinePlayer(args[1]).isOnline() && Bukkit.getPlayer(args[1]).getLocation().getChunk().equals(((Player) sender).getLocation().getChunk()))) {
+								if (!AllowTransfer.contains(Functions.GetUUID(args[1]) + ";" + Functions.GetUUID(sender))) {
+									Player pl = Bukkit.getPlayer(args[1]);
+									pl.sendMessage(lang("transfer-auth").replace("%nick", sender.getName()));
+									new FancyMessage()
+							        .then(lang("transfer-auth-button").replace("%nick", sender.getName()))
+							        .command("/tr transferauth " + sender.getName())
+							        .tooltip(Main.lang("transfer-tooltip"))
+							        .send(pl);
+								} else {
+									AllowTransfer.remove(Functions.GetUUID(args[1]) + ";" + Functions.GetUUID(sender));
+									if (args.length > 2 && args[2].equalsIgnoreCase("-a") && Perm("transfer.recursive", sender, true, true)) {
+										List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+										for (int i = 0; i < tereny.size(); i++) {
+											if (tereny.get(i).split(";")[3].equalsIgnoreCase(((Player) sender).getUniqueId().toString())) {
+												String[] split = tereny.get(i).split(";");
+												File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
+												Functions.Transfer(tconf, sender, args[1]);
+											}
 										}
+									}
+									else if (args.length > 2 && ags.contains("-r")) {
+										if (Perm("transfer.others.recursive", sender, false, true)) {
+											List<String> tereny = Storage.get(cfg.claims()).getStringList("Terrains");
+											Chunk ch = ((Player) sender).getLocation().getChunk();
+											File thconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+											YamlConfiguration tc = YamlConfiguration.loadConfiguration(thconf);
+											String uuid = tc.getString("Owner");
+											for (int i = 0; i < tereny.size(); i++) {
+												if (tereny.get(i).split(";")[3].equalsIgnoreCase(uuid)) {
+													String[] split = tereny.get(i).split(";");
+													File tconf = new File("plugins/TerrainClaim/claims/" + split[0] + "/" + split[1] + "," + split[2] + ".yml");
+													Functions.Transfer(tconf, sender, args[1]);
+												}
+											}
+										}
+									} else {
+										Chunk ch = ((Player) sender).getLocation().getChunk();
+										if (permitted(ch, (Player) sender, 2, false) || Perm("transfer.others", sender, false, true)) {
+											File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
+											if (tconf.exists()) Functions.Transfer(tconf, sender, args[1]);
+											else sender.sendMessage(format("4", lang("transfer-not-claimed")));
+										}
+										else sender.sendMessage(format("4", lang("transfer-not-permitted")));
 									}
 								}
 							} else {
-								Chunk ch = ((Player) sender).getLocation().getChunk();
-								if (permitted(ch, (Player) sender, 2, false) || Perm("transfer.others", sender, false, true)) {
-									File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
-									if (tconf.exists()) Functions.Transfer(tconf, sender, args[1]);
-									else sender.sendMessage(format("4", lang("transfer-not-claimed")));
-								}
-								else sender.sendMessage(format("4", lang("transfer-not-permitted")));
+								if (sender.hasPermission("terrain.transfer.override") || sender.hasPermission("terrain.admin")) sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk-admin")));
+								else sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk")));
 							}
-						} else {
-							if (sender.hasPermission("terrain.transfer.override") || sender.hasPermission("terrain.admin")) sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk-admin")));
-							else sender.sendMessage(format("4", Main.lang("transfer-not-this-chunk")));
 						}
 					} else sender.sendMessage(format("4", "This command can be executed only from game level."));
+				}
+			} if (args[0].equalsIgnoreCase("transferauth")) {
+				if (args.length != 2) sender.sendMessage(format("4", "Syntax error. Use: /tr transferauth " + lang("help-nick")));
+				else {
+					if (AllowTransfer.contains(Functions.GetUUID(sender) + ";" + Functions.GetUUID(args[1]))) sender.sendMessage(format("e", lang("transfer-auth-already")));
+					else {
+						if (Bukkit.getOfflinePlayer(args[1]).isOnline()) {
+							AllowTransfer.add(Functions.GetUUID(sender) + ";" + Functions.GetUUID(args[1]));
+							sender.sendMessage(format("a", lang("transfer-auth-executor")));
+							Bukkit.getPlayer(args[1]).sendMessage(format("a", lang("transfer-auth-owner")));
+						} else sender.sendMessage(format("4", lang("transfer-auth-fail-offline")));
+					}
 				}
 			} else sender.sendMessage(format("4", "Unknown subcommand. Type /terrain to get help."));
 		}

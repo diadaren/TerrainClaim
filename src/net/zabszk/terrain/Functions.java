@@ -700,8 +700,7 @@ public class Functions {
 			OfflinePlayer p = Bukkit.getOfflinePlayer(nick);
 			CacheUUID(p.getUniqueId().toString(), nick);
 			return p.getUniqueId().toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -710,10 +709,21 @@ public class Functions {
 		try {
 			CacheUUID(target.getUniqueId().toString(), target.getName());
 			return target.getUniqueId().toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	public static String GetUUID(CommandSender target) {
+		if (target instanceof Player) {
+			try {
+				CacheUUID(((Player) target).getUniqueId().toString(), target.getName());
+				return ((Player) target).getUniqueId().toString();
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		else return null;
 	}
 	
 	public static String GetNickname(String uuid) {
@@ -745,9 +755,7 @@ public class Functions {
 				Storage.getfile(cfg.UUID()).createNewFile();
 			} catch (Exception ex) {}
 		}
-		
 		FileConfiguration c = Storage.get(cfg.UUID());
-		
 		for(String str : c.getKeys(true)) {
 			uuid.put(str, c.getString(str));
 		}
@@ -755,13 +763,10 @@ public class Functions {
 	
 	public static void SaveCache() {
 		YamlConfiguration c = Storage.get(cfg.UUID());
-		
 		for(Entry<String, String> ui : uuid.entrySet()) {
 			c.set(ui.getKey(), ui.getValue());
 		}
-		
 		Storage.save(cfg.UUID(), c);
-		
 		System.out.println("[TerrainClaim] UUID cache saved.");
 	}
 	
