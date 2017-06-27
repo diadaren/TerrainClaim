@@ -34,14 +34,6 @@ mob-spawning-desc: Mobs can spawn and be spawned
 mob-spawning-default: true
 mob-spawning-perm: A
 
-guest-fly-desc: Guests can fly (if flying enabled in config)
-guest-fly-default: false
-guest-fly-perm: A
-
-member-fly-desc: Members can fly (if flying enabled in config)
-member-fly-default: true
-member-fly-perm: A
-
 explosions-desc: Allow explosions
 explosions-default: false
 explosions-perm: A

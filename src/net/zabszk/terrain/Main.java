@@ -111,8 +111,8 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("unclaim"));
 				sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("settp"));
 			}
-			if (admin || sender.hasPermission("terrain.transfer.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name" + ChatColor.DARK_RED + " [-a | r] [-o]"));
-			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name" + " [-a]"));
+			if (admin || sender.hasPermission("terrain.transfer.others.recursive")) sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name") + ChatColor.DARK_RED + " [-a | r] [-o]");
+			else sender.sendMessage(ChatColor.AQUA + "/" + label + " " + GetAlias("transfer") + " " + lang("help-new-owner-name") + " [-a]");
 			
 			if (admin) sender.sendMessage("");
 			if (admin || sender.hasPermission("terrain.reload")) sender.sendMessage(ChatColor.GOLD + "/" + label + " reload");
@@ -585,8 +585,7 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
 				sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 				sender.sendMessage(ChatColor.GOLD + "=====================================================");
-			}
-			else if (args[0].equalsIgnoreCase("flag"))  {
+			} else if (args[0].equalsIgnoreCase("flag"))  {
 				if (sender instanceof Player) {
 					if (args.length == 1) {
 						Chunk ch = ((Player) sender).getLocation().getChunk();
@@ -651,12 +650,12 @@ public class Main extends JavaPlugin {
 					if (sender instanceof Player) {
 						Set<String> ags = new HashSet<String>(Arrays.asList(args));
 						String commands = "/" + label + " ";
-						for (String ag : ags) {
+						for (String ag : args) {
 							commands += ag + " ";
 						}
 						commands += "-c";
 						if (!ags.contains("-c") && !ags.contains("-o")) {
-							sender.sendMessage(lang("transfer-warning"));
+							sender.sendMessage(lang("transfer-warning").replace("%newowner", args[1]));
 							new FancyMessage(lang("transfer-warning2"))
 					        .then(lang("transfer-warning2-click"))
 					        .command(commands)
@@ -664,14 +663,15 @@ public class Main extends JavaPlugin {
 					        .send(sender);
 						} else {
 							if ((ags.contains("-o") && Perm("transfer.override", sender, false, true)) || (Bukkit.getOfflinePlayer(args[1]).isOnline() && Bukkit.getPlayer(args[1]).getLocation().getChunk().equals(((Player) sender).getLocation().getChunk()))) {
-								if (!AllowTransfer.contains(Functions.GetUUID(args[1]) + ";" + Functions.GetUUID(sender))) {
+								if (!ags.contains("-o") && !AllowTransfer.contains(Functions.GetUUID(args[1]) + ";" + Functions.GetUUID(sender))) {
 									Player pl = Bukkit.getPlayer(args[1]);
 									pl.sendMessage(lang("transfer-auth").replace("%nick", sender.getName()));
-									new FancyMessage()
+									new FancyMessage("")
 							        .then(lang("transfer-auth-button").replace("%nick", sender.getName()))
 							        .command("/tr transferauth " + sender.getName())
 							        .tooltip(Main.lang("transfer-tooltip"))
 							        .send(pl);
+									sender.sendMessage(format("2", lang("transfer-pending-auth").replace("%newowner", pl.getName())));
 								} else {
 									AllowTransfer.remove(Functions.GetUUID(args[1]) + ";" + Functions.GetUUID(sender));
 									if (args.length > 2 && args[2].equalsIgnoreCase("-a") && Perm("transfer.recursive", sender, true, true)) {
@@ -716,7 +716,7 @@ public class Main extends JavaPlugin {
 						}
 					} else sender.sendMessage(format("4", "This command can be executed only from game level."));
 				}
-			} if (args[0].equalsIgnoreCase("transferauth")) {
+			} else if (args[0].equalsIgnoreCase("transferauth")) {
 				if (args.length != 2) sender.sendMessage(format("4", "Syntax error. Use: /tr transferauth " + lang("help-nick")));
 				else {
 					if (AllowTransfer.contains(Functions.GetUUID(sender) + ";" + Functions.GetUUID(args[1]))) sender.sendMessage(format("e", lang("transfer-auth-already")));

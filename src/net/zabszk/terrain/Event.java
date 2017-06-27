@@ -318,9 +318,9 @@ public class Event  implements Listener
 			}
 		}
 		
-		Chunk cha = e.getClickedBlock().getLocation().getChunk();
-		if (!Functions.HasActiveFlag(cha, "use-anywhere")) {
-			try {
+		try {
+			Chunk cha = e.getClickedBlock().getLocation().getChunk();
+			if (!Functions.HasActiveFlag(cha, "use-anywhere")) {
 				if ((e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) && Storage.get(cfg.protection()).getList("InteractiveBlocks").contains(e.getClickedBlock().getTypeId())) {
 					if (!Main.permitted(e.getClickedBlock().getLocation().getChunk(), e.getPlayer(), 0, true)) {
 						Boolean allow = false;
@@ -333,8 +333,8 @@ public class Event  implements Listener
 						}
 					}
 				}
-			} catch (Exception ex) {}
-		}
+			}
+		} catch (Exception ex) {}
 	}
 	
 	@EventHandler (priority = EventPriority.HIGH)

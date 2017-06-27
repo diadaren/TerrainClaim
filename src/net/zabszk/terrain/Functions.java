@@ -133,10 +133,10 @@ public class Functions {
 				for (int i = 0; i < claims.size(); i++) {
 					String[] s = claims.get(i).split(";");
 					if (s[0].equalsIgnoreCase(tconfig.getString("world")) && s[1].equals(tconfig.getString("Chunk").split(",")[0]) && s[2].equals(tconfig.getString("Chunk").split(",")[1])) {
-						claims.set(i, claims.get(i).replace(claims.get(i), uuid));
+						claims.set(i, claims.get(i).replace(claims.get(i).split(";")[3], uuid));
 						Storage.setclaims(claims);
-						sender.sendMessage(Main.format("3", Main.lang("transfer-complete").replace("%name", tconfig.getString("Name").replace("%newowner", target))));
-						Bukkit.getPlayer(target).sendMessage(Main.format("3", Main.lang("transfer-new-owner").replace("%name", tconfig.getString("Name").replace("%prevowner", prevown))));
+						sender.sendMessage(Main.format("3", Main.lang("transfer-complete").replace("%name", tconfig.getString("Name")).replace("%newowner", target)));
+						Bukkit.getPlayer(target).sendMessage(Main.format("3", Main.lang("transfer-new-owner").replace("%name", tconfig.getString("Name")).replace("%prevowner", GetNickname(prevown))));
 						return;
 					}
 				}
