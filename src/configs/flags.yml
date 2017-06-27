@@ -1,0 +1,67 @@
+#Default: true of false - the default state of flag
+#Permissions: who can change the flag: A - anyone (player permissions required), B - permissions required (like VIP), C - admin permissions required, D - flag disabled
+#If you are plugin developer and you want to use API of my plugin, you can create own flag - just define here three values: desc, default and perm. My plugin will find it :).
+
+build-anywhere-desc: Guests can build and break blocks
+build-anywhere-default: false
+build-anywhere-perm: A
+
+door-anywhere-desc: Guests can use door
+door-anywhere-default: false
+door-anywhere-perm: A
+
+switches-anywhere-desc: Guests can use switches and buttons
+switches-anywhere-default: false
+switches-anywhere-perm: A
+
+containers-anywhere-desc: Guests can open containers
+containers-anywhere-default: false
+containers-anywhere-perm: A
+
+containers-anywhere-modify-desc: Guests can edit containers
+containers-anywhere-modify-default: false
+containers-anywhere-modify-perm: A
+
+use-anywhere-desc: Guest can use anything
+use-anywhere-default: false
+use-anywhere-perm: A
+
+blacklisted-commands-anyone-desc: Guests can use blacklisted commands
+blacklisted-commands-anyone-default: false
+blacklisted-commands-anyone-perm: A
+
+mob-spawning-desc: Mobs can spawn and be spawned
+mob-spawning-default: true
+mob-spawning-perm: A
+
+explosions-desc: Allow explosions
+explosions-default: false
+explosions-perm: A
+
+allow-creeper-desc: Allows creeper explosions (overrides config)
+allow-creeper-default: false
+allow-creeper-perm: A
+
+deny-creeper-desc: Blocks creeper explosions (overrides config)
+deny-creeper-default: false
+deny-creeper-perm: C
+
+deny-pvp-desc: Blocks PVP (overrides config)
+deny-pvp-default: false
+deny-pvp-perm: C
+
+allow-pvp-desc: Allows PVP (overrides config)
+allow-pvp-default: false
+allow-pvp-perm: C
+
+prohibit-transfer-desc: Prohibits owner transfer
+prohibit-transfer-default: false
+prohibit-transfer-perm: C
+
+prohibit-members-modify-desc: Prohibits members management
+prohibit-members-modify-default: false
+prohibit-members-modify-perm: C
+
+prohibit-flags-modify-desc: Prohibit flags management
+prohibit-flags-modify-default: false
+prohibit-flags-modify-perm: C
