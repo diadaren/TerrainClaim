@@ -44,7 +44,7 @@ public class Main extends JavaPlugin {
 	public static YamlConfiguration flags;
 	public static YamlConfiguration prefs;
 	
-	public static final int LangVersion = 6;
+	public static final int LangVersion = 7;
 	
 	public static Set<String> CommandBlacklist;
 	public static Set<String> AllowTransfer;
