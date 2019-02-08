@@ -73,7 +73,7 @@ public class Main extends JavaPlugin {
 		
 		System.out.println("[TerrainClaim] Plugin enabled!");
 		System.out.println("TerrainClaim, version " + Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion() + " on " + Bukkit.getBukkitVersion());
-		System.out.println("[TerrainClaim] Copyright by ZABSZK, 2017");
+		System.out.println("[TerrainClaim] Copyright by ZABSZK, 2017-2019");
 		System.out.println("[TerrainClaim] Licensed on Mozilla Public License 2.0");
 	}
 	
@@ -129,7 +129,7 @@ public class Main extends JavaPlugin {
 			
 			sender.sendMessage("");
 			sender.sendMessage(ChatColor.DARK_GRAY + "TerrainClaim, version " + ColorizeVersionName(Bukkit.getServer().getPluginManager().getPlugin("TerrainClaim").getDescription().getVersion(), ChatColor.DARK_GRAY));
-			sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017");
+			sender.sendMessage(ChatColor.DARK_GRAY + "Copyright by ZABSZK, 2017-2019");
 			sender.sendMessage(ChatColor.DARK_GRAY + "Licensed on Mozilla Public License 2.0");
 			sender.sendMessage(ChatColor.GOLD + "=====================================================");
 		} else {

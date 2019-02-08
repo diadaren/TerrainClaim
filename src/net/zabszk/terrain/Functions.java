@@ -307,11 +307,16 @@ public class Functions {
 	
 	protected static void GenerateLang(String name) {
 		File langfile = new File("plugins/TerrainClaim/lang/" + name + ".yml");
-		if (langfile.exists()) {
-			FileConfiguration langconf = YamlConfiguration.loadConfiguration(langfile);
-			if (langconf.getInt("DO-NOT-CHANGE-lang-ver") != Main.LangVersion) langfile.delete();
+		try {
+			if (langfile.exists()) {
+				FileConfiguration langconf = YamlConfiguration.loadConfiguration(langfile);
+				if (langconf.getInt("DO-NOT-CHANGE-lang-ver") != Main.LangVersion) langfile.delete();
+			}
+			if (!langfile.exists()) Extract("resources/" + name + ".yml", "plugins/TerrainClaim/lang/" + name + ".yml");
+			}
+		catch (Exception e) {
+			System.out.println("Failed to process lang: " + name);
 		}
-		if (!langfile.exists()) Extract("resources/" + name + ".yml", "plugins/TerrainClaim/lang/" + name + ".yml");
 	}
 	
 	protected static void GenerateConfig(String name) {

@@ -343,7 +343,7 @@ public class Event  implements Listener
 			try {
 				if (!Main.permitted(e.getWhoClicked().getLocation().getChunk(), (Player) e.getWhoClicked(), 0, true) && !Functions.HasActiveFlag(e.getWhoClicked().getLocation().getChunk(), "containers-anywhere-modify")) {
 					if (e.getSlotType() == SlotType.CONTAINER || e.getSlotType() == SlotType.FUEL) {
-						if (!Main.config.getBoolean("SuppressDenyMessages")) e.getWhoClicked().sendMessage(Main.format("4", Main.lang("action-blocked")));
+						if (!Main.config.getBoolean("SuppressDenyMessages") && e.getWhoClicked() instanceof Player) ((Player) e.getWhoClicked()).sendMessage(Main.format("4", Main.lang("action-blocked")));
 						e.setCancelled(true);
 					}
 				}
@@ -353,7 +353,7 @@ public class Event  implements Listener
 	
 	@EventHandler (priority = EventPriority.HIGH)
 	public void onCreatureSpawn(CreatureSpawnEvent e) {
-		if (e.getSpawnReason() == SpawnReason.NATURAL || e.getSpawnReason() == SpawnReason.BUILD_WITHER || e.getSpawnReason() == SpawnReason.SILVERFISH_BLOCK || e.getSpawnReason() == SpawnReason.INFECTION || e.getSpawnReason() == SpawnReason.VILLAGE_INVASION || e.getSpawnReason() == SpawnReason.ENDER_PEARL || e.getSpawnReason() == SpawnReason.NETHER_PORTAL || e.getSpawnReason() == SpawnReason.JOCKEY || e.getSpawnReason() == SpawnReason.BUILD_SNOWMAN) {
+		//if (e.getSpawnReason() == SpawnReason.NATURAL || e.getSpawnReason() == SpawnReason.BUILD_WITHER || e.getSpawnReason() == SpawnReason.SILVERFISH_BLOCK || e.getSpawnReason() == SpawnReason.INFECTION || e.getSpawnReason() == SpawnReason.VILLAGE_INVASION || e.getSpawnReason() == SpawnReason.ENDER_PEARL || e.getSpawnReason() == SpawnReason.NETHER_PORTAL || e.getSpawnReason() == SpawnReason.JOCKEY || e.getSpawnReason() == SpawnReason.BUILD_SNOWMAN) {
 			Chunk ch = e.getLocation().getChunk();
 			File tconf = new File("plugins/TerrainClaim/claims/" + ch.getWorld().getName() + "/" + ch.getX() + "," + ch.getZ() + ".yml");
 			if (tconf.exists()) {
@@ -361,6 +361,6 @@ public class Event  implements Listener
 					if (!Functions.HasActiveFlag(ch, "mob-spawning")) e.setCancelled(true);
 				} else e.setCancelled(true);
 			}
-		}
+		//}
 	}
 }
