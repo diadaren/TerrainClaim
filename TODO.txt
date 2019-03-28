@@ -1,6 +1,7 @@
 Update to Maven?
 Replace old Fanciful-0.4.0, as source code is not available
 Remove depreciated code
+Comment code
 Fix - Mobs being unable to spawn in claimed chunks
     - Guest player's not being able to sort inventory
     
